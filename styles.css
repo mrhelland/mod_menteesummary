@@ -1,0 +1,33 @@
+/* Minimal styles for mentee summary */
+.menteesummary .mentee { border: 1px solid #ddd; border-radius: 6px; }
+.mentee-header {
+    display: flex;
+    align-items: center;   /* vertically align avatar and text */
+    gap: 0.75rem;          /* space between avatar and text (≈ space-x-3) */
+}
+
+.mentee-header a {
+    display: inline-block;
+    flex-shrink: 0;        /* prevents the avatar from shrinking */
+}
+
+.mentee-header img {
+    display: inline-block;
+    border-radius: 50%;    /* makes profile pics circular if they aren’t already */
+    width: 64px;
+    height: 64px;
+}
+
+.mentee-header #fullname {
+    font-size: 1.125rem;   /* ~text-lg */
+    font-weight: bold;
+}
+
+.mentee-header #username {
+    font-size: 0.875rem;   /* ~text-sm */
+    color: #4b5563;        /* ~text-gray-600 */
+}
+
+.mentee-header .inline-avatar {
+  display: inline;
+}

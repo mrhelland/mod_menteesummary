@@ -1,0 +1,49 @@
+<div class="menteesummary">
+  <a href="{{backurl}}" class="inline-block mb-4 text-blue-600 hover:underline">&larr; Back to mentee list</a>
+
+  <h2 class="text-2xl font-bold mb-4">{{mentee.fullname}}</h2>
+
+  {{#mentee.courses}}
+    <div class="course border rounded-lg mb-4">
+      <div class="course-header bg-gray-100 p-3 cursor-pointer">
+        <a href="{{selecturl}}" class="block font-semibold text-lg">
+          {{fullname}} {{#expanded}}(Grade: {{grade}}){{/expanded}}
+        </a>
+      </div>
+
+      {{#expanded}}
+      <div class="course-details p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Missing -->
+        <div>
+          <h3 class="font-semibold mb-2">Missing Assignments</h3>
+          {{#missing}}
+            <p>{{name}} (due {{duedateformatted}})</p>
+          {{/missing}}
+          {{^missing}}<p>None 🎉</p>{{/missing}}
+        </div>
+
+        <!-- All -->
+        <div>
+          <h3 class="font-semibold mb-2">All Assignments</h3>
+          <ul>
+            {{#allassignments}}
+              <li>{{name}} — {{grade}} / {{maxgrade}} (due {{duedateformatted}})</li>
+            {{/allassignments}}
+          </ul>
+        </div>
+
+        <!-- Upcoming -->
+        <div>
+          <h3 class="font-semibold mb-2">Upcoming Assignments</h3>
+          {{#upcoming}}
+            <p>{{name}} (due {{duedateformatted}})</p>
+          {{/upcoming}}
+          {{^upcoming}}<p>No upcoming 🎉</p>{{/upcoming}}
+        </div>
+
+      </div>
+      {{/expanded}}
+    </div>
+  {{/mentee.courses}}
+</div>

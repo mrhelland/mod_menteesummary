@@ -1,0 +1,30 @@
+{{! Template for displaying mentee chooser cards }}
+
+<div class="menteesummary-chooser grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {{#mentees}}
+        <div class="card mentee-card" data-userid="{{id}}">
+            <div class="card-body">
+                <div class="mentee-header flex items-center space-x-3">
+                    <div class="inline-avatar">
+                        <a href="{{profileurl}}" class="shrink-0">
+                            {{{profilepic}}}
+                        </a>
+                    </div>
+                    <div>
+                        <div id="fullname" class="text-lg font-bold">{{fullname}}</div>
+                        <div id="username" class="text-sm text-gray-600">{{username}}</div>
+                    </div>
+                </div>
+                <div class="mentee-action mt-2">
+                    <a href="{{url}}" class="btn btn-primary">
+                        {{#str}} viewsummary, mod_menteesummary {{/str}}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    {{/mentees}}
+    {{^mentees}}
+        <p>{{#str}} nomentees, mod_menteesummary {{/str}}</p>
+    {{/mentees}}
+</div>
