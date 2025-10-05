@@ -63,6 +63,16 @@ if ($menteeid) {
 if ($selected) {
     // 🔑 FIX: use array access not ->id
     $courses = menteesummary_get_mentee_courses($selected['id']);
+
+    // ✅ Auto-select the only course if just one exists
+    // if (count($courses) === 1 && empty($selectedcourseid)) {
+    //     $selectedcourseid = $courses[0]['id'];
+    // } 
+
+    if(count($courses) > 0 && empty($selectedcourseid)) {
+        $selectedcourseid = $courses[0]['id'];
+    }
+
     foreach ($courses as &$c) {
         $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
 
@@ -78,13 +88,26 @@ if ($selected) {
                 'duedate' => $a->duedate,
                 'duedateformatted' => userdate($a->duedate),
                 'grade' => is_null($a->grade) ? '-' : format_float($a->grade, 1),
-                'maxgrade' => format_float($a->maxgrade, 1) ?? '-'
+                'maxgrade' => format_float($a->maxgrade, 1) ?? '-',
+                'submitted' => $a->submitted,
+                'graded' => !is_null($a->grade),
+                'missing' => is_null($a->grade) && !$a->submitted
             ];
         }
         $c['allassignments'] = $all;
 
-        $c['missing'] = array_values(array_filter($all, fn($a) => $a['grade'] === '-' && $a['duedate'] < time()));
-        $c['upcoming'] = array_values(array_filter($all, fn($a) => $a['duedate'] > time()));
+        // $c['missing'] = array_values(array_filter($all, fn($a) => $a['grade'] === '-' && $a['duedate'] < time()));
+        // $c['upcoming'] = array_values(array_filter($all, fn($a) => $a['duedate'] > time()));
+        $c['missing'] = array_values(array_filter($all, function($a) {
+            return !$a['submitted'] && $a['duedate'] < time();
+        }));
+
+        $c['upcoming'] = array_values(array_filter($all, function($a) {
+            return !$a['submitted'] && $a['duedate'] > time();
+        }));
+
+
+
 
         usort($c['missing'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);
         usort($c['upcoming'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);

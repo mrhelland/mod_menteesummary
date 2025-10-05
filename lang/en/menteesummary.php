@@ -31,3 +31,6 @@ $string['courses'] = 'Courses';
 $string['backtomentee'] = 'Back to Student List';
 $string['chooseacourse'] = 'Choose a course to view details';
 $string['viewingmentee'] = 'Viewing details for';
+
+$string['missing'] = "Missing";
+$string['submitted'] = "Submitted";
