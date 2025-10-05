@@ -14,16 +14,17 @@ class view implements renderable, templatable {
         $this->mentees = $mentees;
     }
 
-    public function export_for_template(renderer_base $output) {
-        $data = ['mentees' => []];
-        foreach ($this->mentees as $m) {
-            $data['mentees'][] = [
-                'id' => $m->id,
-                'fullname' => fullname($m),
-                'profileurl' => (new \moodle_url('/user/profile.php', ['id' => $m->id]))->out(false),
-                'courses' => menteesummary_get_mentee_courses($m->id),
-            ];
-        }
-        return $data;
-    }
+    // public function export_for_template(renderer_base $output) {
+    //     $data = ['mentees' => []];
+    //     foreach ($this->mentees as $m) {
+    //         $data['mentees'][] = [
+    //             'id' => $m->id,
+    //             'fullname' => fullname($m),
+    //             // 'profilepic' => $output->user_picture($m, ['size' => 64, 'link' => false]),
+    //             // 'profileurl' => (new \moodle_url('/user/profile.php', ['id' => $m->id]))->out(false),
+    //             'courses' => menteesummary_get_mentee_courses($m->id),
+    //         ];
+    //     }
+    //     return $data;
+    // }
 }

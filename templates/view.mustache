@@ -1,49 +1,127 @@
-<div class="menteesummary">
-  <a href="{{backurl}}" class="inline-block mb-4 text-blue-600 hover:underline">&larr; Back to mentee list</a>
-
-  <h2 class="text-2xl font-bold mb-4">{{mentee.fullname}}</h2>
-
-  {{#mentee.courses}}
-    <div class="course border rounded-lg mb-4">
-      <div class="course-header bg-gray-100 p-3 cursor-pointer">
-        <a href="{{selecturl}}" class="block font-semibold text-lg">
-          {{fullname}} {{#expanded}}(Grade: {{grade}}){{/expanded}}
-        </a>
-      </div>
-
-      {{#expanded}}
-      <div class="course-details p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        
-        <!-- Missing -->
-        <div>
-          <h3 class="font-semibold mb-2">Missing Assignments</h3>
-          {{#missing}}
-            <p>{{name}} (due {{duedateformatted}})</p>
-          {{/missing}}
-          {{^missing}}<p>None 🎉</p>{{/missing}}
-        </div>
-
-        <!-- All -->
-        <div>
-          <h3 class="font-semibold mb-2">All Assignments</h3>
-          <ul>
-            {{#allassignments}}
-              <li>{{name}} — {{grade}} / {{maxgrade}} (due {{duedateformatted}})</li>
-            {{/allassignments}}
-          </ul>
-        </div>
-
-        <!-- Upcoming -->
-        <div>
-          <h3 class="font-semibold mb-2">Upcoming Assignments</h3>
-          {{#upcoming}}
-            <p>{{name}} (due {{duedateformatted}})</p>
-          {{/upcoming}}
-          {{^upcoming}}<p>No upcoming 🎉</p>{{/upcoming}}
-        </div>
-
-      </div>
-      {{/expanded}}
-    </div>
-  {{/mentee.courses}}
+<!-- Back to Mentee Selection -->
+<div class="mb-3">
+  <a href="{{backurl}}" class="text-decoration-none">
+    <i class="fa fa-arrow-left me-2"></i>{{#str}} backtomentee, mod_menteesummary {{/str}}
+  </a>
 </div>
+
+<!-- Mentee Header Card -->
+<div class="card mb-2 shadow-sm">
+  <div class="card-body d-flex align-items-center p-3">
+    <div class="me-3">
+      {{{mentee.picture}}}
+    </div>
+    <div>
+      <small class="text-muted">{{#str}} viewingmentee, mod_menteesummary {{/str}}</small>
+      <h3 class="mb-0">{{mentee.fullname}}</h3>
+    </div>
+  </div>
+</div>
+
+<!-- Course Tabs -->
+<ul class="nav nav-tabs mb-3" id="courseTabs" role="tablist">
+  {{#mentee.courses}}
+    <li class="nav-item" role="presentation">
+      <a class="nav-link {{#iscurrent}}active{{/iscurrent}}"
+         id="tab-{{id}}"
+         href="{{selecturl}}"
+         role="tab"
+         aria-controls="course-{{id}}"
+         aria-selected="{{#iscurrent}}true{{/iscurrent}}{{^iscurrent}}false{{/iscurrent}}">
+        <i class="fa fa-book me-2"></i>{{fullname}}
+      </a>
+    </li>
+  {{/mentee.courses}}
+</ul>
+
+<!-- Course Content -->
+<div class="tab-content" id="courseTabsContent">
+  {{#hascurrentcourse}}
+    {{#mentee.courses}}
+      <div class="tab-pane fade {{#iscurrent}}show active{{/iscurrent}}"
+          id="course-{{id}}"
+          role="tabpanel"
+          aria-labelledby="tab-{{id}}">
+
+        <div class="card mt-3">
+          <div class="card-body">
+            <h4 class="card-title">{{fullname}}</h4>
+            <p class="card-text">
+              <strong>{{#str}} grade, mod_menteesummary {{/str}}:</strong> {{grade}}
+            </p>
+
+            <!-- Responsive assignment sections -->
+            <div class="row">
+              <!-- Missing Assignments -->
+              <div class="col-12 col-lg-4 mb-3">
+                <h5 class="mt-3 text-danger">{{#str}} missingassignments, mod_menteesummary {{/str}}</h5>
+                <ul class="list-group list-group-flush">
+                  {{#missingassignments}}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <span>
+                        <strong>{{name}}</strong><br>
+                        <small class="text-muted">{{duedateformatted}}</small>
+                      </span>
+                      <span class="badge bg-danger text-white">{{#str}} missing, mod_menteesummary {{/str}}</span>
+                    </li>
+                  {{/missingassignments}}
+                  {{^missingassignments}}
+                    <li class="list-group-item text-muted">{{#str}} nomissingassignments, mod_menteesummary {{/str}}</li>
+                  {{/missingassignments}}
+                </ul>
+              </div>
+
+              <!-- All Assignments -->
+              <div class="col-12 col-lg-4 mb-3">
+                <h5 class="mt-3">{{#str}} assignments, mod_menteesummary {{/str}}</h5>
+                <ul class="list-group list-group-flush">
+                  {{#allassignments}}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <span>
+                        <strong>{{name}}</strong><br>
+                        <small class="text-muted">{{duedateformatted}}</small>
+                      </span>
+                      <span>{{grade}} / {{maxgrade}}</span>
+                    </li>
+                  {{/allassignments}}
+                  {{^allassignments}}
+                    <li class="list-group-item text-muted">{{#str}} noassignments, mod_menteesummary {{/str}}</li>
+                  {{/allassignments}}
+                </ul>
+              </div>
+
+              <!-- Upcoming Assignments -->
+              <div class="col-12 col-lg-4 mb-3">
+                <h5 class="mt-3 text-primary">{{#str}} upcomingassignments, mod_menteesummary {{/str}}</h5>
+                <ul class="list-group list-group-flush">
+                  {{#upcomingassignments}}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <span>
+                        <strong>{{name}}</strong><br>
+                        <small class="text-muted">{{duedateformatted}}</small>
+                      </span>
+                      <span class="badge bg-primary text-white">{{#str}} upcoming, mod_menteesummary {{/str}}</span>
+                    </li>
+                  {{/upcomingassignments}}
+                  {{^upcomingassignments}}
+                    <li class="list-group-item text-muted">{{#str}} noupcomingassignments, mod_menteesummary {{/str}}</li>
+                  {{/upcomingassignments}}
+                </ul>
+              </div>
+            </div> <!-- /.row -->
+          </div>
+        </div>
+      </div>
+    {{/mentee.courses}}
+  {{/hascurrentcourse}}
+  {{^hascurrentcourse}}
+    <div class="alert alert-info text-center mt-4">
+      <i class="fa fa-info-circle me-2"></i>
+      {{#str}} chooseacourse, mod_menteesummary {{/str}}
+    </div>
+  {{/hascurrentcourse}}
+</div>
+
+
+
+

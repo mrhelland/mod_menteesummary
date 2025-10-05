@@ -1,10 +1,12 @@
 <?php
 
 require('../../config.php');
-require_once($CFG->dirroot . '/user/lib.php');
 require_once(__DIR__ . '/locallib.php');
 
-global $OUTPUT;
+global $CFG, $DB, $USER, $PAGE, $OUTPUT;
+
+require_once($CFG->libdir . '/gradelib.php');
+require_once($CFG->dirroot . '/user/lib.php');
 
 $id = required_param('id', PARAM_INT); // Course module ID.
 $menteeid = optional_param('menteeid', 0, PARAM_INT);
@@ -33,7 +35,7 @@ foreach ($users as $m) {
 
     $mentees[] = [
         'id'         => $m->id,
-        'fullname'   => fullname($m),
+        'fullname'   => ucwords(strtolower(fullname($m))),
         'username'   => $m->username,
         'profilepic' => $OUTPUT->user_picture($m, ['size' => 64, 'link' => false]),
         'profileurl' => (new moodle_url('/user/view.php', [
@@ -75,8 +77,8 @@ if ($selected) {
                 'name' => $a->name,
                 'duedate' => $a->duedate,
                 'duedateformatted' => userdate($a->duedate),
-                'grade' => is_null($a->grade) ? '-' : round($a->grade, 2),
-                'maxgrade' => $a->maxgrade ?? '-'
+                'grade' => is_null($a->grade) ? '-' : format_float($a->grade, 1),
+                'maxgrade' => format_float($a->maxgrade, 1) ?? '-'
             ];
         }
         $c['allassignments'] = $all;
@@ -93,15 +95,34 @@ if ($selected) {
             'menteeid' => $selected['id'],
             'courseid' => $c['id']
         ]))->out(false);
+
+        // --- Get the mentee's course total grade ---
+        $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
     }
+
+    // Mark the current course and build tab URLs.
+    foreach ($courses as &$c) {
+        $c['iscurrent'] = ($selectedcourseid == $c['id']);
+        $c['selecturl'] = (new moodle_url('/mod/menteesummary/view.php', [
+            'id' => $cm->id,
+            'menteeid' => $selected['id'],
+            'courseid' => $c['id']
+        ]))->out(false);
+    }
+
+    // Add mentee picture for template display.
+    $userrecord = $DB->get_record('user', ['id' => $selected['id']], '*', MUST_EXIST);
+    $selected['picture'] = $OUTPUT->user_picture($userrecord, ['size' => 64, 'link' => false]);
 
     $viewdata = [
         'mentee' => [
             'id' => $selected['id'],
             'fullname' => $selected['fullname'],
             'courses' => $courses,
+            'picture' => $selected['picture']    
         ],
-        'backurl' => (new moodle_url('/mod/menteesummary/view.php', ['id' => $cm->id]))->out(false)
+        'backurl' => (new moodle_url('/mod/menteesummary/view.php', ['id' => $cm->id]))->out(false),
+        'hascurrentcourse' => !empty($selectedcourseid)
     ];
 
     $template = 'mod_menteesummary/view';
@@ -113,6 +134,7 @@ if ($selected) {
 }
 
 // Get the plugin renderer.
+$PAGE->set_pagelayout('standard');
 $renderer = $PAGE->get_renderer('mod_menteesummary');
 
 echo $OUTPUT->header();

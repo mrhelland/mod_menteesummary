@@ -66,3 +66,43 @@ function menteesummary_get_mentee_courses($menteeid) {
     }
     return $out;
 }
+
+/**
+ * Get the final course total grade for a user in a course.
+ *
+ * @param int $userid User ID
+ * @param int $courseid Course ID
+ * @return float|string Final grade or '-' if not available
+ */
+function menteesummary_get_course_total($userid, $courseid) {
+    global $CFG;
+    require_once($CFG->libdir . '/gradelib.php');
+    require_once($CFG->dirroot . '/grade/querylib.php');
+
+    // $coursegrade = grade_get_course_grades($courseid, $userid);
+    // print_object($coursegrade);
+
+    // if (!empty($coursegrade) && isset($coursegrade->grade)) {
+    //     $percentage = $coursegrade->grade; // This is the final grade (usually already a percentage).
+    //     return format_float($percentage, 1);
+    // }
+
+    $grades = grade_get_course_grades($courseid, $userid);
+
+    // $grades->grades[$userid] contains the user's course total info.
+    if (!empty($grades) && !empty($grades->grades) && isset($grades->grades[$userid])) {
+        $g = $grades->grades[$userid];
+
+        // Prefer the already-formatted string if present (str_grade).
+        if (!empty($g->str_grade)) {
+            return (string)$g->str_grade;
+        }
+
+        // Otherwise fall back to raw grade value (round/format).
+        if (isset($g->grade) && $g->grade !== null) {
+            return format_float($g->grade, 2);
+        }
+    }
+
+    return '-';
+}
