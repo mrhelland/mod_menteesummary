@@ -88,13 +88,11 @@
 }
 
 .menteesummary-course .score-missing {
-  color: #fff;
-  background-color: #C33;
+  color: #CC0000;
 }
 
 .menteesummary-course .score-submitted {
-  color: white;
-  background-color: #69C;
+  color: #096;
 }
 
 .menteesummary-course .course-grade {
@@ -120,3 +118,45 @@
   border: 1px solid #333;
   
 }
+
+.menteesummary-course .score-badge {
+  display: flex;
+  justify-content: right;
+  width: 5rem;
+  font-size: 1rem;
+  padding: 2px;
+  box-sizing: border-box;
+  direction: ltr;
+  font-weight: bold;
+}
+
+.menteesummary-course .score-container {
+  width: 8rem;
+  box-sizing: border-box;
+  direction: rtl;
+}
+
+.menteesummary-course .score-progress {
+  height: 0.2rem;
+  width: 100%;
+  border-radius: 0;
+}
+
+.menteesummary-course .maxgrade {
+  font-weight: bold;
+  color: #966;
+  margin-right: 0.5rem;
+
+}
+
+.menteesummary-course .maxgrade::before {
+  content: "■";
+  margin-left: 1rem;
+  margin-right: 0.5rem;
+  color: #999;
+}
+/*
+.menteesummary-course .assignment-list li:nth-child(even) {
+  background-color: #f6f6f6;
+}
+*/

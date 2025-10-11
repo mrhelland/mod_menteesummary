@@ -112,7 +112,7 @@ if ($selected) {
                 'name' => $a->name,
                 'duedate' => $a->duedate,
                 'duedateformatted' => ($a->duedate >= strtotime('2020-01-01'))
-                                ? userdate($a->duedate)
+                                ? userdate($a->duedate, '%A, %b %e, %Y')
                                 : get_string('notyetdue', 'mod_menteesummary'),
                 'grade' => (is_numeric($a->grade))
                                 ? format_float((float)$a->grade, true, true)
@@ -123,8 +123,8 @@ if ($selected) {
                 'submitted' => $a->submitted,
                 'graded' => $a->graded,
                 'missing' => $a->missing,
-                'scorecolor' => $scorecolor,
-                'scorepercent' => $scorePercent
+                'scorecolor' => get_score_color2($scorePercent),
+                'percent' => $scorePercent
             ];
         }
         $c['allassignments'] = $all;

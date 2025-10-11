@@ -282,3 +282,47 @@ function menteesummary_get_course_total($userid, $courseid) {
 
     return '-';
 }
+
+/**
+ * Returns a CSS color (HEX) based on percentage.
+ *
+ * @param float|int $percent The percentage value (0–100).
+ * @return string A CSS color value.
+ */
+function get_score_color($percent) {
+    // Clamp the input between 0 and 100 just in case.
+    $percent = max(0, min(100, $percent));
+
+    if ($percent < 50) {
+        return '#ff4d4d'; // red
+    } else if ($percent < 70) {
+        return '#ff9900'; // orange
+    } else if ($percent < 80) {
+        return '#ffeb3b'; // yellow
+    } else {
+        return '#4caf50'; // green
+    }
+}
+
+/**
+ * Returns a CSS color (HSL) that is red below 50%,
+ * and transitions smoothly from red to green above 50%.
+ *
+ * @param float|int $percent The percentage value (0–100).
+ * @return string CSS color string (e.g., "hsl(90, 100%, 45%)")
+ */
+function get_score_color2($percent) {
+    // Clamp input between 0 and 100
+    $percent = max(0, min(100, $percent));
+
+    // Below 50%: always red
+    if ($percent <= 50) {
+        $hue = 0; // red
+    } else {
+        // Map 50–100% → 0–120° hue (red → green)
+        $hue = (($percent - 50) / 50) * 120;
+    }
+
+    // Use full saturation and medium lightness for vivid colors
+    return "hsl($hue, 100%, 45%)";
+}
