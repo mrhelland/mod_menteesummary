@@ -13,13 +13,25 @@ function menteesummary_get_all_assignments($userid, $courseid) {
     global $DB;
 
     // 1. Get all assignment info + grades.
-    $sql = "SELECT a.id, a.name, a.duedate, gi.grademax AS maxgrade, g.finalgrade AS grade
-              FROM {assign} a
-              JOIN {course_modules} cm ON cm.instance = a.id
-              JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
-              JOIN {grade_items} gi ON gi.iteminstance = a.id AND gi.itemmodule = 'assign'
-         LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
-             WHERE a.course = :courseid";
+$sql = "SELECT a.id,
+               a.name,
+               a.duedate,
+               gi.grademax AS maxgrade,
+               g.finalgrade AS grade,
+               cm.id AS cmid,
+               cm.section,
+               cs.section AS sectionnumber,
+               FIND_IN_SET(cm.id, cs.sequence)
+                   + (cs.section * 100) AS position  -- ✅ absolute course order
+          FROM {assign} a
+     JOIN {course_modules} cm ON cm.instance = a.id
+     JOIN {course_sections} cs ON cs.id = cm.section
+     JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
+     JOIN {grade_items} gi ON gi.iteminstance = a.id AND gi.itemmodule = 'assign'
+LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
+         WHERE a.course = :courseid
+           AND cm.visible = 1
+      ORDER BY position ASC";
 
     $assignments = $DB->get_records_sql($sql, ['userid' => $userid, 'courseid' => $courseid]);
 
@@ -44,51 +56,106 @@ function menteesummary_get_all_assignments($userid, $courseid) {
     // 4. Mark each assignment as submitted or not.
     foreach ($assignments as &$a) {
         $a->submitted = isset($submissions[$a->id]);
+        $a->graded = !is_null($a->grade);
+        $a->missing = !$a->graded && !$a->submitted;
     }
 
     return $assignments;
 }
 
-function menteesummary_get_all_quizzes($userid, $courseid) {
+/**
+ * Get all quizzes for a mentee in a course with grades and visibility rules.
+ * Includes user/group overrides and absolute course position.
+ */
+function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
     global $DB;
 
-    // 1. Get all quiz info + grades.
-    $sql = "SELECT q.id, q.name, q.timeclose AS duedate, gi.grademax AS maxgrade, g.finalgrade AS grade
-              FROM {quiz} q
-              JOIN {course_modules} cm ON cm.instance = q.id
-              JOIN {modules} m ON m.id = cm.module AND m.name = 'quiz'
-              JOIN {grade_items} gi ON gi.iteminstance = q.id AND gi.itemmodule = 'quiz'
-         LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
-             WHERE q.course = :courseid";
+    // ✅ Get all visible quizzes with correct grade linkage
+    $sql = "SELECT 
+                CONCAT('quiz-', q.id) AS uniqueid,  -- unique key for Moodle array index
+                q.id AS id,
+                q.name,
+                COALESCE(uo.timeclose, go.timeclose, q.timeclose) AS duedate,
+                gi.grademax AS maxgrade,
+                gg.finalgrade AS grade,
+                cm.id AS cmid,
+                cs.section AS sectionnumber,
+                FIND_IN_SET(cm.id, cs.sequence) + (cs.section * 1000) AS position
+            FROM {quiz} q
+            JOIN {course_modules} cm ON cm.instance = q.id
+            JOIN {course_sections} cs ON cs.id = cm.section
+            JOIN {modules} m ON m.id = cm.module AND m.name = 'quiz'
+       LEFT JOIN {grade_items} gi 
+                 ON gi.courseid = q.course 
+                AND gi.iteminstance = q.id 
+                AND gi.itemmodule = 'quiz'
+       LEFT JOIN {grade_grades} gg 
+                 ON gg.itemid = gi.id 
+                AND gg.userid = :userid
+       LEFT JOIN {quiz_overrides} uo 
+                 ON uo.quiz = q.id 
+                AND uo.userid = :userid1
+       LEFT JOIN {groups_members} gm 
+                 ON gm.userid = :userid2
+       LEFT JOIN {quiz_overrides} go 
+                 ON go.quiz = q.id 
+                AND go.groupid = gm.groupid
+           WHERE q.course = :courseid
+             AND cm.visible = 1
+        ORDER BY position ASC";
 
-    $quizzes = $DB->get_records_sql($sql, ['userid' => $userid, 'courseid' => $courseid]);
+    $params = [
+        'userid'  => $userid,
+        'userid1' => $userid,
+        'userid2' => $userid,
+        'courseid'=> $courseid
+    ];
+
+    $quizzes = $DB->get_records_sql($sql, $params);
 
     if (empty($quizzes)) {
         return [];
     }
 
-    // 2. Get all quiz IDs in this course.
-    $quizids = array_keys($quizzes);
+    // ✅ Find user’s finished quiz attempts
+    $quizids = array_map(fn($q) => $q->id, $quizzes);
+    list($insql, $inparams) = $DB->get_in_or_equal($quizids, SQL_PARAMS_NAMED);
+    $inparams['userid'] = $userid;
 
-    // 3. Fetch all finished quiz attempts for this user.
-    list($insql, $params) = $DB->get_in_or_equal($quizids, SQL_PARAMS_NAMED);
-    $params['userid'] = $userid;
+    $attemptsql = "SELECT 
+                       CONCAT('attempt-', qa.id) AS uniqueid,
+                       qa.quiz,
+                       qa.userid,
+                       qa.state
+                   FROM {quiz_attempts} qa
+                  WHERE qa.quiz $insql
+                    AND qa.userid = :userid
+                    AND qa.state = 'finished'";
 
-    $attempts = $DB->get_records_select('quiz_attempts',
-        "quiz $insql AND userid = :userid AND state = 'finished'",
-        $params,
-        '',
-        'quiz'
-    );
+    $attempts = $DB->get_records_sql($attemptsql, $inparams);
 
-    // 4. Mark each quiz as submitted or not.
-    foreach ($quizzes as &$q) {
-        $q->submitted = isset($attempts[$q->id]);
+
+     $submitted_quizids = [];
+    foreach ($attempts as $attempt) {
+        $submitted_quizids[$attempt->quiz] = true;
     }
 
-    return $quizzes;
-}
+    // ✅ Normalize each quiz record
+    foreach ($quizzes as &$q) {
+        $q->submitted = isset($attempts[$q->id]);
 
+        // Handle grades gracefully
+        $q->grade = is_null($q->grade) ? '-' : format_float($q->grade, 1);
+        $q->maxgrade = is_null($q->maxgrade) ? '-' : format_float($q->maxgrade, 1);
+        $q->submitted = !empty($submitted_quizids[$q->id]);
+        $q->graded = $q->submitted;
+        $q->missing = !$q->submitted;
+    }
+
+    
+
+    return array_values($quizzes);
+}
 
 // function menteesummary_get_all_assignments($userid, $courseid) {
 //     global $DB;
@@ -201,16 +268,16 @@ function menteesummary_get_course_total($userid, $courseid) {
     // $grades->grades[$userid] contains the user's course total info.
     if (!empty($grades) && !empty($grades->grades) && isset($grades->grades[$userid])) {
         $g = $grades->grades[$userid];
-
+        // Otherwise fall back to raw grade value (round/format).
+        if (isset($g->grade) && $g->grade !== null) {
+            return format_float($g->grade, 1);
+        }
         // Prefer the already-formatted string if present (str_grade).
         if (!empty($g->str_grade)) {
             return (string)$g->str_grade;
         }
 
-        // Otherwise fall back to raw grade value (round/format).
-        if (isset($g->grade) && $g->grade !== null) {
-            return format_float($g->grade, 2);
-        }
+
     }
 
     return '-';

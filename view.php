@@ -78,20 +78,49 @@ if ($selected) {
 
         // All assignments
         $assignments = menteesummary_get_all_assignments($selected['id'], $c['id']);
-        usort($assignments, fn($a,$b) => $a->duedate <=> $b->duedate);
+        $quizzes = menteesummary_get_all_quizzes($selected['id'], $c['id']);
+
+        // Merge the lists
+        $activities = array_merge($assignments, $quizzes);
+        // usort($activities, fn($a,$b) => $a->duedate <=> $b->duedate);
+        usort($activities, function($a, $b) {
+            return ($a->position ?? 0) <=> ($b->position ?? 0);
+        });
 
         $all = [];
-        foreach ($assignments as $a) {
+        foreach ($activities as $a) {
+            if($a->graded) {
+                $scorePercent = (float)$a->grade / (float)$a->maxgrade;
+                switch (true) {
+                    case $scorePercent >= .50:
+                        $scorecolor = "score-high";
+                        break;
+
+                    default:
+                        $scorecolor = "score-low";
+                        break;
+                }
+            } else {
+                $scorecolor = "score-default";
+            }
+
             $all[] = [
                 'id' => $a->id,
                 'name' => $a->name,
                 'duedate' => $a->duedate,
-                'duedateformatted' => userdate($a->duedate),
-                'grade' => is_null($a->grade) ? '-' : format_float($a->grade, 1),
-                'maxgrade' => format_float($a->maxgrade, 1) ?? '-',
+                'duedateformatted' => ($a->duedate >= strtotime('2020-01-01'))
+                                ? userdate($a->duedate)
+                                : get_string('notyetdue', 'mod_menteesummary'),
+                'grade' => (is_numeric($a->grade))
+                                ? format_float((float)$a->grade, 1)
+                                : '-', // fallback for missing grade
+                'maxgrade' => (is_numeric($a->maxgrade))
+                                ? format_float((float)$a->maxgrade, 0)
+                                : '-',
                 'submitted' => $a->submitted,
-                'graded' => !is_null($a->grade),
-                'missing' => is_null($a->grade) && !$a->submitted
+                'graded' => $a->graded,
+                'missing' => $a->missing,
+                'scorecolor' => $scorecolor
             ];
         }
         $c['allassignments'] = $all;
