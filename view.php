@@ -1,41 +1,39 @@
 <?php
 
+
+
+// include dependencies
 require('../../config.php');
 require_once(__DIR__ . '/locallib.php');
-
-global $CFG, $DB, $USER, $PAGE, $OUTPUT;
-
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 
+defined('MOODLE_INTERNAL') || die();
+
+// Get current object id's
 $id = required_param('id', PARAM_INT); // Course module ID.
 $menteeid = optional_param('menteeid', 0, PARAM_INT);
 $selectedcourseid = optional_param('courseid', 0, PARAM_INT);
 
+// Get context and check permissions
 $cm = get_coursemodule_from_id('menteesummary', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
-
 require_login($course, true, $cm);
 require_capability('mod/menteesummary:view', $context);
 
+// Update page
 $PAGE->set_url('/mod/menteesummary/view.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($cm->name));
 $PAGE->set_heading($course->fullname);
 
-$mentees = [];
-
 // Get mentees assigned to current user
+$mentees = [];
 $users = menteesummary_get_user_mentees($USER->id); 
-
 foreach ($users as $m) {
-    $pic = new user_picture($m);
-    $pic->size = 64;
-    $pic->includetoken = true;
-
     $mentees[] = [
         'id'         => $m->id,
-        'fullname'   => ucwords(strtolower(fullname($m))),
+        'fullname'   => ucwords(fullname($m)),
         'username'   => $m->username,
         'profilepic' => $OUTPUT->user_picture($m, ['size' => 64, 'link' => false]),
         'profileurl' => (new moodle_url('/user/view.php', [
@@ -49,7 +47,7 @@ foreach ($users as $m) {
     ];
 }
 
-// 🔑 FIX: remove array_key_exists, manually locate mentee
+// Determine if a mentee is selected
 $selected = null;
 if ($menteeid) {
     foreach ($mentees as $mentee) {
@@ -61,53 +59,34 @@ if ($menteeid) {
 }
 
 if ($selected) {
-    // 🔑 FIX: use array access not ->id
     $courses = menteesummary_get_mentee_courses($selected['id']);
 
     // ✅ Auto-select the only course if just one exists
-    // if (count($courses) === 1 && empty($selectedcourseid)) {
-    //     $selectedcourseid = $courses[0]['id'];
-    // } 
-
     if(count($courses) > 0 && empty($selectedcourseid)) {
         $selectedcourseid = $courses[0]['id'];
     }
 
+    // Iterate through courses
     foreach ($courses as &$c) {
         $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
 
-        // All assignments
+        // Get and merge all assignments and quizzes
         $assignments = menteesummary_get_all_assignments($selected['id'], $c['id']);
         $quizzes = menteesummary_get_all_quizzes($selected['id'], $c['id']);
-
-        // Merge the lists
         $activities = array_merge($assignments, $quizzes);
-        // usort($activities, fn($a,$b) => $a->duedate <=> $b->duedate);
+
+        // Sort by position in the course
         usort($activities, function($a, $b) {
             return ($a->position ?? 0) <=> ($b->position ?? 0);
         });
 
+        // Create array of all activities for display
         $all = [];
         foreach ($activities as $a) {
             if($a->graded) {
-                $scorePercent = 100.0 * (float)$a->grade / (float)$a->maxgrade;
-                switch (true) {
-                    case $scorePercent >= 75:
-                        $scorecolor = "score-high";
-                        break;
-                    case $scorePercent >= 50:
-                        $scorecolor = "score-low";
-                        break;
-                    default:
-                        $scorecolor = "score-danger";
-                        break;
-                }
-            
+                $scorePercent = 100.0 * (float)$a->grade / (float)$a->maxgrade;            
             } else {
-                $scorecolor = "score-default";
                 $scorePercent = "n/a";
-                $feedback = ''; // No feedback if not graded
-
             }
 
             $all[] = [
@@ -128,47 +107,41 @@ if ($selected) {
                 'missing' => $a->missing,
                 'scorecolor' => get_score_color2($scorePercent),
                 'percent' => $scorePercent,
-                'feedback' => $a->feedback
+                'feedback' => $a->feedback,
+                'hasfeedback' => $a->hasfeedback
             ];
         }
+
         $c['allassignments'] = $all;
 
-        // $c['missing'] = array_values(array_filter($all, fn($a) => $a['grade'] === '-' && $a['duedate'] < time()));
-        // $c['upcoming'] = array_values(array_filter($all, fn($a) => $a['duedate'] > time()));
-        $c['missing'] = array_values(array_filter($all, function($a) {
-            return !$a['submitted'] && $a['duedate'] < time();
-        }));
+        // Build sorted lists of missing and upcoming assignments
+        // $c['missing'] = array_values(array_filter($all, function($a) {
+        //     return !$a['submitted'] && $a['duedate'] < time();
+        // }));
+        // $c['upcoming'] = array_values(array_filter($all, function($a) {
+        //     return !$a['submitted'] && $a['duedate'] > time();
+        // }));
+        // usort($c['missing'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);
+        // usort($c['upcoming'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);
 
-        $c['upcoming'] = array_values(array_filter($all, function($a) {
-            return !$a['submitted'] && $a['duedate'] > time();
-        }));
-
-
-
-
-        usort($c['missing'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);
-        usort($c['upcoming'], fn($a,$b) => $a['duedate'] <=> $b['duedate']);
-
-        $c['expanded'] = ($selectedcourseid == $c['id']);
+        //$c['expanded'] = ($selectedcourseid == $c['id']);
+        $c['iscurrent'] = ($selectedcourseid == $c['id']);        
         $c['selecturl'] = (new moodle_url('/mod/menteesummary/view.php', [
             'id' => $cm->id,
             'menteeid' => $selected['id'],
             'courseid' => $c['id']
         ]))->out(false);
-
-        // --- Get the mentee's course total grade ---
-        $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
     }
 
     // Mark the current course and build tab URLs.
-    foreach ($courses as &$c) {
-        $c['iscurrent'] = ($selectedcourseid == $c['id']);
-        $c['selecturl'] = (new moodle_url('/mod/menteesummary/view.php', [
-            'id' => $cm->id,
-            'menteeid' => $selected['id'],
-            'courseid' => $c['id']
-        ]))->out(false);
-    }
+    // foreach ($courses as &$c) {
+
+    //     $c['selecturl'] = (new moodle_url('/mod/menteesummary/view.php', [
+    //         'id' => $cm->id,
+    //         'menteeid' => $selected['id'],
+    //         'courseid' => $c['id']
+    //     ]))->out(false);
+    // }
 
     // Add mentee picture for template display.
     $userrecord = $DB->get_record('user', ['id' => $selected['id']], '*', MUST_EXIST);
@@ -182,6 +155,7 @@ if ($selected) {
             'picture' => $selected['picture']    
         ],
         'backurl' => (new moodle_url('/mod/menteesummary/view.php', ['id' => $cm->id]))->out(false),
+        'selectedcourseid' => $selectedcourseid,
         'hascurrentcourse' => !empty($selectedcourseid)
     ];
 

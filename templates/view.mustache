@@ -63,9 +63,42 @@
                         <div>
                           <strong>{{name}}</strong><br>
                           <small class="text-muted"><span class="maxgrade">{{maxgrade}} points</span>{{duedateformatted}}</small>
-                          {{#feedback}}
-                            <div>{{text}}</div>
-                          {{/feedback}}
+                          
+{{#hasfeedback}}
+  <!-- Feedback Button -->
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-secondary mt-2"
+    data-bs-toggle="modal"
+    data-bs-target="#feedbackModal-{{id}}">
+    {{#str}} viewfeedback, mod_menteesummary {{/str}}
+  </button>
+
+  <!-- Feedback Modal -->
+  <div class="modal fade" id="feedbackModal-{{id}}" tabindex="-1" aria-labelledby="feedbackModalLabel-{{id}}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="feedbackModalLabel-{{id}}">
+            {{#str}} feedback, mod_menteesummary {{/str}} — {{name}}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{#feedback}}
+            <div class="text-muted mb-2">{{text}}</div>
+          {{/feedback}}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            {{#str}} close, mod_menteesummary {{/str}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{{/hasfeedback}}
+
                         </div>
                         {{#submitted}}
                           {{#graded}}

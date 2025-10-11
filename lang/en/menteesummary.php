@@ -35,3 +35,6 @@ $string['viewingmentee'] = 'Viewing details for';
 $string['missing'] = "Missing";
 $string['submitted'] = "Submitted";
 $string['notyetdue'] = ' ';
+$string['feedback'] = 'Feedback';
+$string['viewfeedback'] = 'View feedback';
+$string['close'] = 'Close';

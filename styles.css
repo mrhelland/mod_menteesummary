@@ -155,8 +155,7 @@
   margin-right: 0.5rem;
   color: #999;
 }
-/*
-.menteesummary-course .assignment-list li:nth-child(even) {
-  background-color: #f6f6f6;
+
+.menteesummary-course .feedback-modal .modal-body {
+  white-space: pre-wrap;
 }
-*/

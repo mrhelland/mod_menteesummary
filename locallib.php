@@ -58,6 +58,7 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
         $a->submitted = isset($submissions[$a->id]);
         $a->graded = !is_null($a->grade);
         $a->missing = !$a->graded && !$a->submitted;
+
         // ✅ Fetch feedback if graded.
         if ($a->graded) {
             $feedbackArray = menteesummary_get_assignment_feedback($userid, $courseid, $a->id);
@@ -65,8 +66,10 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
             $a->feedback = array_map(function($text) {
                                 return ['text' => $text];
                             }, $feedbackArray);
+            $a->hasfeedback = !empty($feedbackArray);
         } else {
-            $a->feedback = '';
+            $a->feedback = [];
+            $a->hasfeedback = false;
         }
     }
 
@@ -160,7 +163,8 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
         $q->submitted = !empty($submitted_quizids[$q->id]);
         $q->graded = $q->submitted;
         $q->missing = !$q->submitted;
-        $q->feedback = '';
+        $q->feedback = [];
+        $q->hasfeedback = false;
     }
 
     
