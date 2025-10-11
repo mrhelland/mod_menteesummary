@@ -53,9 +53,8 @@
             <!-- Responsive assignment sections -->
             <div class="row gx-0 gx-lg-5">
 
-
               <!-- All Assignments -->
-              <div class="col-lg-6">
+              <div class="col-12 col-lg-9 col-xl-6">
                 <h5 class="mt-3">{{#str}} assignments, mod_menteesummary {{/str}}</h5>
                 <ul class="list-group list-group-flush">
                   {{#allassignments}}
@@ -86,44 +85,6 @@
                 </ul>
               </div>
 
-              <!-- Missing Assignments -->
-              <div class="col-lg-6 border-start border-3 border-secondary">
-                <div class="col-12 col-lg-12 mb-6">
-                  <h5 class="mt-3 text-danger">{{#str}} missingassignments, mod_menteesummary {{/str}}</h5>
-                  <ul class="list-group list-group-flush">
-                    {{#missing}}
-                      <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                          <strong>{{name}}</strong><br>
-                          <small class="text-muted">{{duedateformatted}}</small>
-                        </span>
-                      </li>
-                    {{/missing}}
-                    {{^missing}}
-                      <li class="list-group-item text-muted">{{#str}} nomissingassignments, mod_menteesummary {{/str}}</li>
-                    {{/missing}}
-                  </ul>
-                </div>
-
-                <!-- Upcoming Assignments
-                <div class="col-12 col-lg-12 mb-3">
-                  <h5 class="mt-3 text-primary">{{#str}} upcomingassignments, mod_menteesummary {{/str}}</h5>
-                  <ul class="list-group list-group-flush">
-                    {{#upcoming}}
-                      <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                          <strong>{{name}}</strong><br>
-                          <small class="text-muted">{{duedateformatted}}</small>
-                        </span>
-                        <span class="badge bg-primary text-white">{{#str}} upcoming, mod_menteesummary {{/str}}</span>
-                      </li>
-                    {{/upcoming}}
-                    {{^upcoming}}
-                      <li class="list-group-item text-muted">{{#str}} noupcomingassignments, mod_menteesummary {{/str}}</li>
-                    {{/upcoming}}
-                  </ul>
-                </div> -->
-              </div>
             </div> <!-- /.row -->
           </div>
         </div>

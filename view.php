@@ -90,18 +90,21 @@ if ($selected) {
         $all = [];
         foreach ($activities as $a) {
             if($a->graded) {
-                $scorePercent = (float)$a->grade / (float)$a->maxgrade;
+                $scorePercent = 100.0 * (float)$a->grade / (float)$a->maxgrade;
                 switch (true) {
-                    case $scorePercent >= .50:
+                    case $scorePercent >= 75:
                         $scorecolor = "score-high";
                         break;
-
-                    default:
+                    case $scorePercent >= 50:
                         $scorecolor = "score-low";
+                        break;
+                    default:
+                        $scorecolor = "score-danger";
                         break;
                 }
             } else {
                 $scorecolor = "score-default";
+                $scorePercent = "n/a";
             }
 
             $all[] = [
@@ -112,15 +115,16 @@ if ($selected) {
                                 ? userdate($a->duedate)
                                 : get_string('notyetdue', 'mod_menteesummary'),
                 'grade' => (is_numeric($a->grade))
-                                ? format_float((float)$a->grade, 1)
+                                ? format_float((float)$a->grade, true, true)
                                 : '-', // fallback for missing grade
                 'maxgrade' => (is_numeric($a->maxgrade))
-                                ? format_float((float)$a->maxgrade, 0)
+                                ? format_float((float)$a->maxgrade, true, true)
                                 : '-',
                 'submitted' => $a->submitted,
                 'graded' => $a->graded,
                 'missing' => $a->missing,
-                'scorecolor' => $scorecolor
+                'scorecolor' => $scorecolor,
+                'scorepercent' => $scorePercent
             ];
         }
         $c['allassignments'] = $all;

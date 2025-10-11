@@ -73,35 +73,41 @@
 }
 
 .menteesummary-course .score-high {
-  color: rgb(32,32,32);
-  background-color:  rgb(32,32,32,0.1);
+  color: #333;
+  background-color: #EEFFEE;
 }
 
 .menteesummary-course .score-low {
-  color: rgb(32,16,0);
-  background-color: rgb(255,128,0,0.1);
+  color: #310;
+  background-color: #FEC;
+}
+
+.menteesummary-course .score-danger {
+  color: #300;
+  background-color: #FDD;
 }
 
 .menteesummary-course .score-missing {
-  color: white;
-  background-color: rgb(192,0,0);
+  color: #fff;
+  background-color: #C33;
 }
 
 .menteesummary-course .score-submitted {
-  color: rgb(0,64,128);
-  background-color: rgb(0,64,128,0.1);
+  color: white;
+  background-color: #69C;
 }
 
 .menteesummary-course .course-grade {
   display: inline-block;
   text-align: center;
-  font-size: 1rem;
+  font-size: 1.25rem;
   padding: 4px 8px;
   border-radius: 50px;
   border: 2px solid black;
   background-color: #333;
   color: white;
   font-weight: normal;
+  margin-left: 1rem;
 }
 
 .menteesummary-course .score {
@@ -112,4 +118,5 @@
   padding: 2px;
   border-radius: 50px;
   border: 1px solid #333;
+  
 }
