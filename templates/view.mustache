@@ -63,6 +63,9 @@
                         <div>
                           <strong>{{name}}</strong><br>
                           <small class="text-muted"><span class="maxgrade">{{maxgrade}} points</span>{{duedateformatted}}</small>
+                          {{#feedback}}
+                            <div>{{text}}</div>
+                          {{/feedback}}
                         </div>
                         {{#submitted}}
                           {{#graded}}

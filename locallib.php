@@ -58,6 +58,16 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
         $a->submitted = isset($submissions[$a->id]);
         $a->graded = !is_null($a->grade);
         $a->missing = !$a->graded && !$a->submitted;
+        // ✅ Fetch feedback if graded.
+        if ($a->graded) {
+            $feedbackArray = menteesummary_get_assignment_feedback($userid, $courseid, $a->id);
+                    // Mustache expects an array of associative arrays if iterating
+            $a->feedback = array_map(function($text) {
+                                return ['text' => $text];
+                            }, $feedbackArray);
+        } else {
+            $a->feedback = '';
+        }
     }
 
     return $assignments;
@@ -150,6 +160,7 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
         $q->submitted = !empty($submitted_quizids[$q->id]);
         $q->graded = $q->submitted;
         $q->missing = !$q->submitted;
+        $q->feedback = '';
     }
 
     
@@ -157,59 +168,65 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
     return array_values($quizzes);
 }
 
-// function menteesummary_get_all_assignments($userid, $courseid) {
-//     global $DB;
+/**
+ * Get teacher feedback for a single assignment as an array (unique entries only).
+ *
+ * @param int $userid
+ * @param int $courseid
+ * @param int $assignid
+ * @return array Array of unique feedback strings.
+ */
+function menteesummary_get_assignment_feedback($userid, $courseid, $assignid) {
+    global $DB, $CFG;
 
-//     $sql = "SELECT a.id, a.name, a.duedate, gi.grademax AS maxgrade, g.finalgrade AS grade
-//               FROM {assign} a
-//               JOIN {course_modules} cm ON cm.instance = a.id
-//               JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
-//               JOIN {grade_items} gi ON gi.iteminstance = a.id AND gi.itemmodule = 'assign'
-//          LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
-//              WHERE a.course = :courseid";
+    require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
-//     return $DB->get_records_sql($sql, ['userid' => $userid, 'courseid' => $courseid]);
-// }
-// function menteesummary_get_all_assignments($userid, $courseid) {
-//     global $DB;
+    $cm = get_coursemodule_from_instance('assign', $assignid, $courseid, false, IGNORE_MISSING);
+    if (!$cm) {
+        return [];
+    }
 
-//     $sql = "SELECT a.id, a.name, a.duedate, gi.grademax AS maxgrade, g.finalgrade AS grade
-//               FROM {assign} a
-//               JOIN {course_modules} cm ON cm.instance = a.id
-//               JOIN {modules} m ON m.id = cm.module AND m.name = 'assign'
-//               JOIN {grade_items} gi ON gi.iteminstance = a.id AND gi.itemmodule = 'assign'
-//          LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
-//              WHERE a.course = :courseid";
+    $context = context_module::instance($cm->id);
+    $assign = new assign($context, $cm, $cm->course);
 
-//     $assignments = $DB->get_records_sql($sql, ['userid' => $userid, 'courseid' => $courseid]);
+    // Get the user's grade record
+    $grade = $DB->get_record('assign_grades', [
+        'assignment' => $assignid,
+        'userid' => $userid
+    ]);
 
-//     // Add submitted flag for each assignment.
-//     foreach ($assignments as &$a) {
-//         $a->submitted = $DB->record_exists('assign_submission', [
-//             'assignment' => $a->id,
-//             'userid' => $userid,
-//             'status' => 'submitted'
-//         ]);
-//     }
+    if (!$grade) {
+        return [];
+    }
 
-//     return $assignments;
-// }
-// function menteesummary_get_user_mentees($userid) {
-//     global $DB;
-//     // Basic heuristic: find users where there is a role assignment in the same course contexts as $userid
-//     $sql = "SELECT u.*
-//           FROM {user} u
-//           JOIN {role_assignments} ra ON ra.userid = u.id
-//           JOIN {context} ctx ON ctx.id = ra.contextid
-//          WHERE ctx.contextlevel = :contextlevel
-//            AND EXISTS (
-//               SELECT 1
-//                 FROM {role_assignments} pra
-//                WHERE pra.userid = :parentid
-//                  AND pra.contextid = ctx.id
-//            )";
-//     return $DB->get_records_sql($sql, ['contextlevel' => CONTEXT_COURSE, 'parentid' => $userid]);
-// }
+    $feedbacktexts = [];
+
+    // --- 1. Gather from visible feedback plugins ---
+    foreach ($assign->get_feedback_plugins() as $plugin) {
+        if ($plugin->is_enabled() && $plugin->is_visible()) {
+            $output = $plugin->view($grade);
+            if (!empty($output)) {
+                $feedbacktexts[] = trim(strip_tags($output));
+            }
+        }
+    }
+
+    // --- 2. Get direct comments (avoiding duplication) ---
+    $comments = $DB->get_records('assignfeedback_comments', ['grade' => $grade->id]);
+    foreach ($comments as $c) {
+        if (!empty($c->commenttext)) {
+            $text = trim(strip_tags($c->commenttext));
+            if (!in_array($text, $feedbacktexts, true)) { // prevent duplicates
+                $feedbacktexts[] = $text;
+            }
+        }
+    }
+
+    // --- 3. Return unique non-empty feedback texts ---
+    $feedbacktexts = array_filter(array_unique($feedbacktexts));
+
+    return array_values($feedbacktexts);
+}
 
 function menteesummary_get_user_mentees(int $mentorid): array {
     global $DB;

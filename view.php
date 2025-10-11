@@ -102,9 +102,12 @@ if ($selected) {
                         $scorecolor = "score-danger";
                         break;
                 }
+            
             } else {
                 $scorecolor = "score-default";
                 $scorePercent = "n/a";
+                $feedback = ''; // No feedback if not graded
+
             }
 
             $all[] = [
@@ -124,7 +127,8 @@ if ($selected) {
                 'graded' => $a->graded,
                 'missing' => $a->missing,
                 'scorecolor' => get_score_color2($scorePercent),
-                'percent' => $scorePercent
+                'percent' => $scorePercent,
+                'feedback' => $a->feedback
             ];
         }
         $c['allassignments'] = $all;
