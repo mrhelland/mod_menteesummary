@@ -35,7 +35,7 @@
 </ul>
 
 <!-- Course Content -->
-<div class="tab-content" id="courseTabsContent">
+<div class="menteesummary-course tab-content" id="courseTabsContent">
   {{#hascurrentcourse}}
     {{#mentee.courses}}
       <div class="tab-pane fade {{#iscurrent}}show active{{/iscurrent}}"
@@ -67,15 +67,15 @@
                       <span>
                         {{#submitted}}
                           {{#graded}}
-                            <span class="badge bg-success text-white fs-6 fw-bold px-3 py-1">{{grade}} / {{maxgrade}}</span>
+                            <span class="text-white bg-dark rounded-pill px-3 py-1 fw-bold">{{grade}} / {{maxgrade}}</span>
                           {{/graded}}
                           {{^graded}}
-                            <span class="badge bg-info text-white fs-6 fw-bold px-3 py-1">{{#str}} submitted, mod_menteesummary {{/str}}</span>
+                            <span class="text-white bg-info rounded-pill px-3 py-1 fw-bold">{{#str}} submitted, mod_menteesummary {{/str}}</span>
                           {{/graded}}
                         {{/submitted}}
 
                         {{#missing}}
-                          <span class="badge bg-danger text-white fs-6 fw-bold px-3 py-1">{{#str}} missing, mod_menteesummary {{/str}}</span>
+                          <span class="text-white bg-danger rounded-pill px-3 py-1 fw-bold">{{#str}} missing, mod_menteesummary {{/str}}</span>
                         {{/missing}}
                       </span>
                     </li>
