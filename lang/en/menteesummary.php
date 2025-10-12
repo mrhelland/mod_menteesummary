@@ -36,5 +36,5 @@ $string['missing'] = "Missing";
 $string['submitted'] = "Submitted";
 $string['notyetdue'] = ' ';
 $string['feedback'] = 'Feedback';
-$string['viewfeedback'] = 'View feedback';
+$string['viewfeedback'] = '💬 Feedback';
 $string['close'] = 'Close';
