@@ -427,13 +427,44 @@ function get_score_color2($percent) {
     $percent = max(0, min(100, $percent));
 
     // Below 50%: always red
-    if ($percent <= 50) {
+    if ($percent < 50) {
         $hue = 0; // red
+    } else if($percent >= 90) {
+        $hue = 120;
     } else {
         // Map 50–100% → 0–120° hue (red → green)
-        $hue = (($percent - 50) / 50) * 120;
+        $hue = (($percent - 50) / 40) * 120;
     }
 
     // Use full saturation and medium lightness for vivid colors
     return "hsl($hue, 100%, 45%)";
+}
+
+/**
+ * Returns an icon URL for a given category name.
+ *
+ * @param string $categoryname The name of the category.
+ * @return string The pix URL of the icon.
+ */
+function menteesummary_get_category_icon(string $categoryname): string {
+    global $OUTPUT;
+
+    $name = strtolower(trim($categoryname));
+
+    // Keyword-based icon matching.
+    if (strpos($name, 'assignment') !== false || strpos($name, 'learning') !== false) {
+        $icon = 'assignment_icon';
+    } else if (strpos($name, 'test') !== false || strpos($name, 'quiz') !== false) {
+        $icon = 'test_icon';
+    } else if (strpos($name, 'final') !== false || strpos($name, 'summary') !== false) {
+        $icon = 'final_icon';
+    } else if (strpos($name, 'employability') !== false) {
+        $icon = 'employability_icon';
+    } else {
+        // Optional: provide a default fallback icon.
+        $icon = 'default_icon';
+    }
+
+    // Return a Moodle pix URL (e.g. pix_icon or image_url)
+    return $OUTPUT->image_url($icon, 'mod_menteesummary')->out();
 }

@@ -58,11 +58,23 @@
                 <ul class="assignment-list list-group list-group-flush">
                   {{#allassignments}}
                     <li class="list-group-item">
-                      <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                          <strong>{{name}}</strong><br>
-                          <small class="text-muted"><span class="maxgrade">{{maxgrade}} points</span></small>
-                          
+                      <!-- Three-part horizontal layout -->
+                      <div class="d-flex align-items-start">
+                        <!-- Left: Icon -->
+                        <div class="me-2 flex-shrink-0">
+                          <img
+                            src="{{categoryicon}}"
+                            alt="{{categoryname}} Icon"
+                            width="32" height="32">
+                        </div>
+
+                        <!-- Middle: Assignment info -->
+                        <div class="flex-grow-1 min-w-0">
+                          <strong class="d-block text-truncate">{{name}}</strong>
+                          <small class="text-dark">
+                            <span>{{maxgrade}} points</span>
+                          </small>
+
                           <!-- Always-visible Details button -->
                           <button
                             type="button"
@@ -71,34 +83,16 @@
                             data-title="{{#str}} details, mod_menteesummary {{/str}} — {{name}}"
                             data-bs-toggle="modal">
                             {{#str}} viewdetails, mod_menteesummary {{/str}}
-                          </button> 
-
+                          </button>
                           {{#hasfeedback}}
-                            <!-- Moodle modal trigger button -->
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-outline-secondary mt-2 badge"
-                              data-feedback-target="#feedback-content-{{id}}"
-                              data-title="{{#str}} feedback, mod_menteesummary {{/str}} — {{name}}"
-                              data-bs-toggle="modal">
-                              {{#str}} viewfeedback, mod_menteesummary {{/str}}
-                            </button>
-
-                            <!-- Hidden feedback container -->
-                            <div id="feedback-content-{{id}}" class="hidden" style="display:none;">
-                              {{#feedback}}
-                                <div class="text-muted mb-2">{{text}}</div>
-                              {{/feedback}}
-                            </div>
+                            <span class="ms-1 align-middle" title="{{#str}} feedbackavailable, mod_menteesummary {{/str}}">
+                              <i class="fa fa-comment text-info"></i>
+                            </span>
                           {{/hasfeedback}}
-
-
 
                           <!-- Hidden Details Container -->
                           <div id="details-content-{{id}}" class="hidden" style="display:none;">
-                            <div class="mb-2">
-                              <strong>{{name}}</strong>
-                            </div>
+                            <div class="mb-2"><strong>{{name}}</strong></div>
 
                             <div class="mb-2">
                               <strong>{{#str}} duedate, mod_menteesummary {{/str}}:</strong>
@@ -107,7 +101,7 @@
 
                             <div class="mb-2">
                               <strong>{{#str}} categoryname, mod_menteesummary {{/str}}:</strong>
-                              <div>{{categoryname}} ({{categoryweight}}%) </div>
+                              <div>{{categoryname}} ({{categoryweight}}%)</div>
                             </div>
 
                             {{#graded}}
@@ -135,52 +129,60 @@
                                 <div class="text-danger">{{#str}} missing, mod_menteesummary {{/str}}</div>
                               </div>
                             {{/missing}}
+
+                            {{#hasfeedback}}
+                              <div class="mb-2">
+                                <strong>{{#str}} feedback, mod_menteesummary {{/str}}:</strong>
+                                <div class="feedback-container border rounded p-2 mt-1" style="max-height:150px; overflow-y:auto;">
+                                  {{#feedback}}
+                                    <div class="text-muted mb-2">{{text}}</div>
+                                  {{/feedback}}
+                                </div>
+                              </div>
+                            {{/hasfeedback}}
+
                           </div>
-
-
-
                         </div>
-                        {{#submitted}}
-                          {{#graded}}
-                            {{! Display numeric score above a progress bar }}
-                            <div class="text-end score-container">
-                              <div class="score-badge">{{grade}}</div>
-                              <div class="progress score-progress">
-                                <div
-                                  class="progress-bar"
-                                  role="progressbar"
-                                  style="width: {{percent}}%; background: {{scorecolor}}"
-                                  aria-valuenow="{{percent}}"
-                                  aria-valuemin="0"
-                                  aria-valuemax="100">
-                                </div>
-                              </div>
-                            </div>
-                          {{/graded}}
-                          {{^graded}}
-                            <div class="text-end">
-                            <div class="text-end score-container">
-                              <div class="score-badge score-submitted">Submitted</div>
-                              <div class="progress score-progress">
-                                <div
-                                  class="progress-bar"
-                                  role="progressbar"
-                                  style="width: {{percent}}%; background: {{scorecolor}};"
-                                  aria-valuenow="{{percent}}"
-                                  aria-valuemin="0"
-                                  aria-valuemax="100">
-                                </div>
-                              </div>
-                            </div>
-                            </div>
-                          {{/graded}}
-                        {{/submitted}}
 
-                        {{#missing}}
-                          <div class="text-end">
-                            <div class="text-end score-container">
+                        <!-- Right: Score / progress (single container to keep alignment) -->
+                        <div class="ms-auto text-end flex-shrink-0" style="min-width: 140px;">
+                          {{#submitted}}
+                            {{#graded}}
+                              <div class="score-container">
+                                <div class="score-badge">{{grade}}</div>
+                                <div class="progress score-progress mt-1">
+                                  <div
+                                    class="progress-bar"
+                                    role="progressbar"
+                                    style="width: {{percent}}%; background: {{scorecolor}};"
+                                    aria-valuenow="{{percent}}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                  </div>
+                                </div>
+                              </div>
+                            {{/graded}}
+                            {{^graded}}
+                              <div class="score-container">
+                                <div class="score-badge score-submitted">Submitted</div>
+                                <div class="progress score-progress mt-1">
+                                  <div
+                                    class="progress-bar"
+                                    role="progressbar"
+                                    style="width: {{percent}}%; background: {{scorecolor}};"
+                                    aria-valuenow="{{percent}}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                  </div>
+                                </div>
+                              </div>
+                            {{/graded}}
+                          {{/submitted}}
+
+                          {{#missing}}
+                            <div class="score-container">
                               <div class="score-badge score-missing">Missing</div>
-                              <div class="progress score-progress">
+                              <div class="progress score-progress mt-1">
                                 <div
                                   class="progress-bar"
                                   role="progressbar"
@@ -191,17 +193,19 @@
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        {{/missing}}
+                          {{/missing}}
+                        </div>
                       </div>
                     </li>
                   {{/allassignments}}
+
                   {{^allassignments}}
-                    <li class="list-group-item text-muted">{{#str}} noassignments, mod_menteesummary {{/str}}</li>
+                    <li class="list-group-item text-muted">
+                      {{#str}} noassignments, mod_menteesummary {{/str}}
+                    </li>
                   {{/allassignments}}
                 </ul>
               </div>
-
             </div> <!-- /.row -->
           </div>
         </div>

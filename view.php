@@ -162,6 +162,7 @@ if ($selected) {
                 'name' => $a->name,
                 'categoryname' => $a->categoryname,
                 'categoryweight' => $a->categoryweight,
+                'categoryicon' => menteesummary_get_category_icon($a->categoryname),
                 'duedate' => $a->duedate,
                 'duedateformatted' => ($a->duedate >= strtotime('2020-01-01'))
                     ? userdate($a->duedate, '%A, %b %e, %Y')

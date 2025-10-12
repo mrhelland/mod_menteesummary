@@ -46,3 +46,4 @@ $string['duedate'] = "Due Date";
 $string['earnedgrade'] = "Earned Grade";
 $string['maxgrade'] = "Possible";
 $string['categoryname'] = "Category";
+$string['feedbackavailable'] = "Feedback is available";
