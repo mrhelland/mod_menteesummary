@@ -167,6 +167,7 @@ if ($selected) {
                 'duedateformatted' => ($a->duedate >= strtotime('2020-01-01'))
                     ? userdate($a->duedate, '%A, %b %e, %Y')
                     : get_string('notyetdue', 'mod_menteesummary'),
+                'hasduedate' => ($a->duedate >= strtotime('2020-01-01')),
                 'grade' => (is_numeric($a->grade))
                     ? format_float((float) $a->grade, true, true)
                     : '-', // fallback for missing grade
@@ -231,19 +232,12 @@ if ($selected) {
     ];
 
     $template = 'mod_menteesummary/view';
-    $downloadurl = new moodle_url('/mod/menteesummary/download_json.php');
-    $viewdata['downloadurl'] = $downloadurl->out();
 
 } else {
     // Show chooser
     $viewdata = new \mod_menteesummary\output\chooser($mentees, $cm->id);
     $template = 'mod_menteesummary/chooser';
 }
-
-
-
-
-$_SESSION['viewdata'] = $viewdata;
 
 // Get the plugin renderer.
 $PAGE->set_pagelayout('standard');
