@@ -21,7 +21,7 @@ function($, Modal, ModalEvents, Notification) {
             }
 
             const bodyHtml = `
-                <div class="modal-scrollable p-3" style="max-height:60vh; overflow-y:auto;">
+                <div class="modal-scrollable p-3" style="max-height:80vh; overflow-y:auto;">
                     ${$content.html() || ''}
                 </div>
             `;
@@ -31,20 +31,20 @@ function($, Modal, ModalEvents, Notification) {
                 body: bodyHtml,
                 large: true
             }).then(modal => {
-                const $root = modal.getRoot();
-                const $dialog = $root.find('.modal-dialog');
+                // const $root = modal.getRoot();
+                // const $dialog = $root.find('.modal-dialog');
 
-                // ✅ Restore Moodle’s default centering and sizing
-                $root.addClass('modal-dialog-centered');
-                $dialog.css({
-                    'max-width': '',   // remove fixed width
-                    'margin': '',      // use Bootstrap defaults
-                    'position': '',    // reset from fixed
-                    'left': '',        // reset any manual position
-                    'top': '',         // reset any manual position
-                    'transform': '',   // reset any custom transform
-                    'opacity': ''      // reset any fade tweak
-                });
+                // // ✅ Restore Moodle’s default centering and sizing
+                // $root.addClass('modal-dialog-centered');
+                // $dialog.css({
+                //     'max-width': '',   // remove fixed width
+                //     'margin': '',      // use Bootstrap defaults
+                //     'position': '',    // reset from fixed
+                //     'left': '',        // reset any manual position
+                //     'top': '',         // reset any manual position
+                //     'transform': '',   // reset any custom transform
+                //     'opacity': ''      // reset any fade tweak
+                // });
 
                 modal.show();
                 modal.getRoot().on(ModalEvents.hidden, () => modal.destroy());
