@@ -234,6 +234,12 @@ if ($selected) {
     $template = 'mod_menteesummary/chooser';
 }
 
+$downloadurl = new moodle_url('/mod/menteesummary/download_json.php');
+$viewdata['downloadurl'] = $downloadurl->out();
+
+
+$_SESSION['viewdata'] = $viewdata;
+
 // Get the plugin renderer.
 $PAGE->set_pagelayout('standard');
 $renderer = $PAGE->get_renderer('mod_menteesummary');
