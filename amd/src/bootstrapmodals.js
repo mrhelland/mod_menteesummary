@@ -1,19 +1,12 @@
 /**
- * Display feedback modals near click position and narrower on desktop.
+ * Display feedback modals using Moodle's default centered position.
  *
  * @module mod_menteesummary/bootstrapmodals
  */
 define(['jquery', 'core/modal', 'core/modal_events', 'core/notification'],
 function($, Modal, ModalEvents, Notification) {
 
-    let lastClick = {x: window.innerWidth / 2, y: window.innerHeight / 2};
-
     const init = () => {
-
-        // Track last click position globally (anywhere on document)
-        $(document).on('click', function(e) {
-            lastClick = {x: e.clientX, y: e.clientY};
-        });
 
         // Handle feedback button clicks
         $(document).on('click', '[data-feedback-target]', function(e) {
@@ -38,48 +31,24 @@ function($, Modal, ModalEvents, Notification) {
                 body: bodyHtml,
                 large: true
             }).then(modal => {
-                  const $root = modal.getRoot();
-                  const $dialog = $root.find('.modal-dialog');
-                  $root.removeClass('modal-dialog-centered');
-                  // ✳️ Make narrower on desktop
-                  $dialog.css({
-                      'max-width': '450px',
-                      'margin': '0',
-                      'position': 'fixed'
-                  });
+                const $root = modal.getRoot();
+                const $dialog = $root.find('.modal-dialog');
 
-                  // ✳️ Position near click (stay within viewport)
-                  const modalWidth  = 450;
-                  const modalHeight = 300;
+                // ✅ Restore Moodle’s default centering and sizing
+                $root.addClass('modal-dialog-centered');
+                $dialog.css({
+                    'max-width': '',   // remove fixed width
+                    'margin': '',      // use Bootstrap defaults
+                    'position': '',    // reset from fixed
+                    'left': '',        // reset any manual position
+                    'top': '',         // reset any manual position
+                    'transform': '',   // reset any custom transform
+                    'opacity': ''      // reset any fade tweak
+                });
 
-                  const left = Math.min(
-                      Math.max(lastClick.x - modalWidth / 2, 20),
-                      window.innerWidth - modalWidth - 20
-                  );
-                  const top = Math.min(
-                      Math.max(lastClick.y - modalHeight / 3, 20),
-                      window.innerHeight - modalHeight - 20
-                  );
-
-                  $dialog.css({
-                      left: `${left}px`,
-                      top: `${top}px`
-                  });
-
-                  $dialog.css({ opacity: 0, transform: 'scale(0.9)' });
-                      setTimeout(() => {
-                          $dialog.css({
-                              transition: 'opacity 0.2s ease, transform 0.2s ease',
-                              opacity: 1,
-                              transform: 'scale(1)'
-                          });
-                      }, 10);
-
-
-                  // ✅ Keep Moodle backdrop fully functional
-                  modal.show();
-                  modal.getRoot().on(ModalEvents.hidden, () => modal.destroy());
-              }).catch(err => {
+                modal.show();
+                modal.getRoot().on(ModalEvents.hidden, () => modal.destroy());
+            }).catch(err => {
                 Notification.exception(err);
             });
         });
@@ -87,6 +56,7 @@ function($, Modal, ModalEvents, Notification) {
 
     return { init: init };
 });
+
 
 
 
