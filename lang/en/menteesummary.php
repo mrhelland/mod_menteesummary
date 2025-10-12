@@ -38,3 +38,10 @@ $string['notyetdue'] = ' ';
 $string['feedback'] = 'Feedback';
 $string['viewfeedback'] = '💬 Feedback';
 $string['close'] = 'Close';
+
+$string['viewdetails'] = '📃 Details';
+$string['details'] = 'Details';
+$string['status'] = 'Status';
+$string['duedate'] = "Due Date";
+$string['earnedgrade'] = "Earned Grade";
+$string['maxgrade'] = "Possible";

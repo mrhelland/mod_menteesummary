@@ -62,8 +62,18 @@
                       <div class="d-flex justify-content-between align-items-start">
                         <div>
                           <strong>{{name}}</strong><br>
-                          <small class="text-muted"><span class="maxgrade">{{maxgrade}} points</span>{{duedateformatted}}</small>
+                          <small class="text-muted"><span class="maxgrade">{{maxgrade}} points</span></small>
                           
+                          <!-- Always-visible Details button -->
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary mt-2 badge"
+                            data-feedback-target="#details-content-{{id}}"
+                            data-title="{{#str}} details, mod_menteesummary {{/str}} — {{name}}"
+                            data-bs-toggle="modal">
+                            {{#str}} viewdetails, mod_menteesummary {{/str}}
+                          </button> 
+
                           {{#hasfeedback}}
                             <!-- Moodle modal trigger button -->
                             <button
@@ -82,6 +92,48 @@
                               {{/feedback}}
                             </div>
                           {{/hasfeedback}}
+
+
+
+                          <!-- Hidden Details Container -->
+                          <div id="details-content-{{id}}" class="hidden" style="display:none;">
+                            <div class="mb-2">
+                              <strong>{{name}}</strong>
+                            </div>
+
+                            <div class="mb-2">
+                              <strong>{{#str}} duedate, mod_menteesummary {{/str}}:</strong>
+                              <div>{{duedateformatted}}</div>
+                            </div>
+
+                            {{#graded}}
+                              <div class="mb-2">
+                                <strong>{{#str}} earnedgrade, mod_menteesummary {{/str}}:</strong>
+                                <div>{{grade}}</div>
+                              </div>
+                            {{/graded}}
+
+                            <div class="mb-2">
+                              <strong>{{#str}} maxgrade, mod_menteesummary {{/str}}:</strong>
+                              <div>{{maxgrade}}</div>
+                            </div>
+
+                            {{#submitted}}
+                              <div class="mb-2">
+                                <strong>{{#str}} status, mod_menteesummary {{/str}}:</strong>
+                                <div>{{#str}} submitted, mod_menteesummary {{/str}}</div>
+                              </div>
+                            {{/submitted}}
+
+                            {{#missing}}
+                              <div class="mb-2">
+                                <strong>{{#str}} status, mod_menteesummary {{/str}}:</strong>
+                                <div class="text-danger">{{#str}} missing, mod_menteesummary {{/str}}</div>
+                              </div>
+                            {{/missing}}
+                          </div>
+
+
 
                         </div>
                         {{#submitted}}
@@ -160,11 +212,12 @@
   {{/hascurrentcourse}}
 </div>
 
+<!-- remove this from production -->
 <div>
-<a href="{{downloadurl}}" class="btn btn-secondary mt-2">
-  Download JSON
-</a>
-
+  <span>Remove this button from production</span>
+  <a href="{{downloadurl}}" class="btn btn-secondary mt-2">
+    Download JSON
+  </a>
 </div>
 
 

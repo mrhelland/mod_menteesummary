@@ -227,6 +227,8 @@ if ($selected) {
     ];
 
     $template = 'mod_menteesummary/view';
+    $downloadurl = new moodle_url('/mod/menteesummary/download_json.php');
+    $viewdata['downloadurl'] = $downloadurl->out();
 
 } else {
     // Show chooser
@@ -234,8 +236,7 @@ if ($selected) {
     $template = 'mod_menteesummary/chooser';
 }
 
-$downloadurl = new moodle_url('/mod/menteesummary/download_json.php');
-$viewdata['downloadurl'] = $downloadurl->out();
+
 
 
 $_SESSION['viewdata'] = $viewdata;
