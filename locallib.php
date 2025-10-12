@@ -18,6 +18,7 @@ $sql = "SELECT a.id,
                a.duedate,
                gi.grademax AS maxgrade,
                g.finalgrade AS grade,
+               gi.categoryid, 
                cm.id AS cmid,
                cm.section,
                cs.section AS sectionnumber,
@@ -39,6 +40,13 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
         return [];
     }
 
+    // 💠 ADDED: Preload all grade categories for this course (efficient lookup)
+    $categories = $DB->get_records('grade_categories', ['courseid' => $courseid], '', 'id, fullname');
+    $categorymap = [];
+    foreach ($categories as $cat) {
+        $categorymap[$cat->id] = $cat->fullname;
+    }
+
     // 2. Get all assignment IDs in this course.
     $assignmentids = array_keys($assignments);
 
@@ -58,6 +66,16 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
         $a->submitted = isset($submissions[$a->id]);
         $a->graded = !is_null($a->grade);
         $a->missing = !$a->graded && !$a->submitted;
+
+        // 💠 ADDED: Attach category name (fallback to "Uncategorised")
+        if (!empty($a->categoryid) && isset($categorymap[$a->categoryid])) {
+            $a->categoryname = $categorymap[$a->categoryid];
+            $a->categoryweight = menteesummary_get_category_weight_percent($courseid, $a->categoryid);
+        } else {
+            $a->categoryname = get_string('uncategorised', 'grades');
+            $a->categoryweight = "--";
+        }
+
 
         // ✅ Fetch feedback if graded.
         if ($a->graded) {
@@ -91,6 +109,7 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
                 COALESCE(uo.timeclose, go.timeclose, q.timeclose) AS duedate,
                 gi.grademax AS maxgrade,
                 gg.finalgrade AS grade,
+                gi.categoryid,
                 cm.id AS cmid,
                 cs.section AS sectionnumber,
                 FIND_IN_SET(cm.id, cs.sequence) + (cs.section * 1000) AS position
@@ -130,6 +149,13 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
         return [];
     }
 
+    // 💠 ADDED: Preload all grade categories for this course.
+    $categories = $DB->get_records('grade_categories', ['courseid' => $courseid], '', 'id, fullname');
+    $categorymap = [];
+    foreach ($categories as $cat) {
+        $categorymap[$cat->id] = $cat->fullname;
+    }
+
     // ✅ Find user’s finished quiz attempts
     $quizids = array_map(fn($q) => $q->id, $quizzes);
     list($insql, $inparams) = $DB->get_in_or_equal($quizids, SQL_PARAMS_NAMED);
@@ -165,6 +191,15 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
         $q->missing = !$q->submitted;
         $q->feedback = [];
         $q->hasfeedback = false;
+
+        // 💠 ADDED: Attach the grading category name
+        if (!empty($q->categoryid) && isset($categorymap[$q->categoryid])) {
+            $q->categoryname = $categorymap[$q->categoryid];
+            $q->categoryweight = menteesummary_get_category_weight_percent($courseid, $q->categoryid);
+        } else {
+            $q->categoryname = get_string('uncategorised', 'grades');
+            $q->categoryweight = "--";
+        }
     }
 
     
@@ -324,6 +359,61 @@ function get_score_color($percent) {
         return '#4caf50'; // green
     }
 }
+
+/**
+ * Returns the effective percentage weight of a grade category within a course.
+ *
+ * This calculates the category’s relative contribution (as a percent)
+ * of its siblings under the same parent category, based on the grade_items table.
+ *
+ * @param int $courseid The course ID.
+ * @param int $categoryid The grade_categories.id of the category.
+ * @return float|null The effective percentage weight (0–100), or null if not applicable.
+ */
+function menteesummary_get_category_weight_percent(int $courseid, int $categoryid): ?float {
+    global $DB;
+
+    // 1. Get the grade item corresponding to this category.
+    $item = $DB->get_record('grade_items', [
+        'courseid' => $courseid,
+        'itemtype' => 'category',
+        'iteminstance' => $categoryid
+    ], 'id, categoryid, aggregationcoef', IGNORE_MISSING);
+
+    if (!$item) {
+        return null; // No category grade item found
+    }
+
+    // 2. Get all sibling category items under the same parent category.
+    $siblings = $DB->get_records('grade_items', [
+        'courseid' => $courseid,
+        'itemtype' => 'category',
+        'categoryid' => $item->categoryid
+    ], '', 'id, aggregationcoef');
+
+    if (empty($siblings)) {
+        return null;
+    }
+
+    // 3. Compute total aggregation coefficients for normalization.
+    $total = 0.0;
+    foreach ($siblings as $sib) {
+        $total += (float)$sib->aggregationcoef;
+    }
+
+    if ($total <= 0) {
+        return null; // No meaningful weighting (e.g., Natural aggregation)
+    }
+
+    // 4. Calculate normalized percentage.
+    $weight = ((float)$item->aggregationcoef / $total) * 100;
+
+    // 5. Round for display
+    return round($weight, 2);
+}
+
+
+
 
 /**
  * Returns a CSS color (HSL) that is red below 50%,

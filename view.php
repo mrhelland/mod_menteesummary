@@ -150,6 +150,7 @@ if ($selected) {
         // Create array of all activities for display
         $all = [];
         foreach ($activities as $a) {
+            
             if ($a->graded) {
                 $scorePercent = 100.0 * (float) $a->grade / (float) $a->maxgrade;
             } else {
@@ -159,6 +160,8 @@ if ($selected) {
             $all[] = [
                 'id' => $a->id,
                 'name' => $a->name,
+                'categoryname' => $a->categoryname,
+                'categoryweight' => $a->categoryweight,
                 'duedate' => $a->duedate,
                 'duedateformatted' => ($a->duedate >= strtotime('2020-01-01'))
                     ? userdate($a->duedate, '%A, %b %e, %Y')
