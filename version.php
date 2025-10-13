@@ -2,7 +2,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_menteesummary';
-$plugin->version   = 2025100402;
+$plugin->version   = 2025100500;
 $plugin->requires  = 2024052700;   // Moodle 4.5+.
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.12 (built from block_improvedmentees)';
+$plugin->maturity  = MATURITY_BETA;
+$plugin->release   = '0.8 (built from block_improvedmentees)';

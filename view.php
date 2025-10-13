@@ -182,6 +182,7 @@ if ($selected) {
                 'feedback' => $a->feedback,
                 'hasfeedback' => $a->hasfeedback
             ];
+            //print_object($all);
         }
 
         $c['allassignments'] = $all;

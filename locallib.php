@@ -64,8 +64,12 @@ LEFT JOIN {grade_grades} g ON g.itemid = gi.id AND g.userid = :userid
     // 4. Mark each assignment as submitted or not.
     foreach ($assignments as &$a) {
         $a->submitted = isset($submissions[$a->id]);
-        $a->graded = !is_null($a->grade);
+        $a->graded = !is_null($a->grade) && $a->grade !== '' && $a->grade !== false;
         $a->missing = !$a->graded && !$a->submitted;
+
+        if ($a->graded && !$a->submitted) {
+            $a->submitted = true;
+        }
 
         // 💠 ADDED: Attach category name (fallback to "Uncategorised")
         if (!empty($a->categoryid) && isset($categorymap[$a->categoryid])) {
