@@ -27,7 +27,7 @@ $string['status'] = 'Status';
 $string['duedate'] = "Due Date";
 $string['feedbackavailable'] = "Feedback is available";
 $string['viewcourse'] = "View this course";
-$string['viewassignment'] = "View course assignment";
+$string['viewassignment'] = "View this assignment";
 
 
 

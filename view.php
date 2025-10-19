@@ -189,6 +189,7 @@ if ($selected) {
 $PAGE->set_pagelayout('standard');
 $renderer = $PAGE->get_renderer('mod_menteesummary');
 
+$PAGE->requires->js_call_amd('theme_boost_union/bootstrap', 'init');
 $PAGE->requires->js_call_amd('mod_menteesummary/bootstrapmodals', 'init');
 
 

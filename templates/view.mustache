@@ -74,7 +74,7 @@
                         <!-- Middle: Assignment info -->
                         <div class="flex-grow-1 min-w-0">
                           <strong class="d-block text-truncate">
-                            <a href="{{activityurl}}" target="_blank" class="text-decoration-none text-dark" title="{{#str}} viewcourse, mod_menteesummary {{/str}}">
+                            <a href="{{activityurl}}" target="_blank" class="text-decoration-none text-dark" title="{{#str}} viewassignment, mod_menteesummary {{/str}}">
                               {{name}}
                             </a>
                           </strong>
@@ -83,87 +83,87 @@
                           </small>
 
                           <!-- Always-visible Details button -->
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary mt-2 badge"
-                            data-feedback-target="#details-content-{{id}}"
-                            data-title="Assignment Details"
-                            data-bs-toggle="modal">
-                            {{#str}} viewdetails, mod_menteesummary {{/str}}
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-secondary mt-2 badge"
+                                  data-toggle="modal"
+                                  data-target="#modal-{{courseid}}-{{id}}">
+                              📃 Details
                           </button>
+
+
                           {{#hasfeedback}}
                             <span class="ms-1 align-middle" title="{{#str}} feedbackavailable, mod_menteesummary {{/str}}">
                               <i class="fa fa-comment text-info"></i>
                             </span>
                           {{/hasfeedback}}
+                        </div>
 
-                          <!-- Hidden Details Container -->
-                          <div id="details-content-{{courseid}}-{{id}}" class="hidden" style="display:none;">
-                            <!-- Header section -->
-                            <div class="d-flex justify-content-between align-items-start mb-3" style="font-size: 1.2rem;">
-                              <div class="d-flex align-items-center">
-                                <img src="{{categoryicon}}" alt="{{categoryname}} Icon" width="42" class="mr-2">
-                                <div>
-                                  <strong>{{name}}</strong><br>
-                                  <small class="text-muted">{{categoryname}} Category - <em>{{categoryweight}}% of overall</em></small>
-                                </div>
+                        <!-- Bootstrap Modal -->
+                        <div class="modal fade" id="modal-{{courseid}}-{{id}}" tabindex="-1" role="dialog" aria-labelledby="modalLabel-{{courseid}}-{{id}}" aria-hidden="true">
+                          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="modalLabel-{{courseid}}-{{id}}">
+                                  <i class="fa fa-clipboard-list me-2"></i>{{name}}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                               </div>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
 
-                            <!-- Body Section -->
-                            <div style="font-size: 1.1rem;">
-                              <!-- Due date -->
-                              {{#hasduedate}}
-                              <div class="mb-2">
-                                <strong class="mr-2">{{#str}} duedate, mod_menteesummary {{/str}}:</strong><span>{{duedateformatted}}</span>
+                              <div class="modal-body">
+                                <div class="d-flex align-items-center mb-3">
+                                  <img src="{{categoryicon}}" alt="{{categoryname}} Icon" width="42" class="me-2">
+                                  <div>
+                                    <small class="text-muted">{{categoryname}} Category - <em>{{categoryweight}}% of overall</em></small>
+                                  </div>
+                                </div>
+
+                                {{#hasduedate}}
+                                  <div class="mb-2">
+                                    <strong>{{#str}} duedate, mod_menteesummary {{/str}}:</strong> {{duedateformatted}}
+                                  </div>
+                                {{/hasduedate}}
+
+                                {{#graded}}
+                                  <div class="mb-2">
+                                    <strong>{{#str}} grade, mod_menteesummary {{/str}}:</strong> {{grade}} / {{maxgrade}}
+                                  </div>
+                                {{/graded}}
+
+                                {{^graded}}
+                                  {{#submitted}}
+                                    <div class="mb-2">
+                                      <strong>{{#str}} status, mod_menteesummary {{/str}}:</strong>
+                                      <strong class="score-submitted">{{#str}} submitted, mod_menteesummary {{/str}}</strong>
+                                    </div>
+                                  {{/submitted}}
+                                  {{#missing}}
+                                    <div class="mb-2">
+                                      <strong>{{#str}} status, mod_menteesummary {{/str}}:</strong>
+                                      <strong class="score-missing">{{#str}} missing, mod_menteesummary {{/str}}</strong>
+                                    </div>
+                                  {{/missing}}
+                                {{/graded}}
+
+                                {{#hasfeedback}}
+                                  <div class="mt-3">
+                                    <strong>{{#str}} feedback, mod_menteesummary {{/str}}:</strong>
+                                    <div class="feedback-container border rounded p-2 mt-1" style="max-height:150px; overflow-y:auto;">
+                                      {{#feedback}}
+                                        <div class="text-muted mb-2">{{text}}</div>
+                                      {{/feedback}}
+                                    </div>
+                                  </div>
+                                {{/hasfeedback}}
+
+                                {{^hasfeedback}}
+                                  <div class="mt-3 text-muted"><em>No additional feedback</em></div>
+                                {{/hasfeedback}}
                               </div>
-                              {{/hasduedate}}
-
-                              <!-- Grade or status -->
-                              {{#graded}}
-                                <div class="mb-2">
-                                  <strong class="mr-2">{{#str}} grade, mod_menteesummary {{/str}}:</strong>
-                                  <span>{{grade}} / {{maxgrade}}</span>
-                                </div>
-                              {{/graded}}
-
-                              {{^graded}}
-                                {{#submitted}}
-                                  <div class="mb-2">
-                                    <strong class="mr-2">{{#str}} status, mod_menteesummary {{/str}}:</strong>
-                                    <strong class="score-submitted">{{#str}} submitted, mod_menteesummary {{/str}}</strong>
-                                  </div>
-                                {{/submitted}}
-
-                                {{#missing}}
-                                  <div class="mb-2">
-                                    <strong class="mr-2">{{#str}} status, mod_menteesummary {{/str}}:</strong>
-                                    <strong class="score-missing">{{#str}} missing, mod_menteesummary {{/str}}</strong>
-                                  </div>
-                                {{/missing}}
-                              {{/graded}}
-
-                              <!-- Feedback section -->
-                              {{#hasfeedback}}
-                                <div class="mb-2">
-                                  <strong>{{#str}} feedback, mod_menteesummary {{/str}}:</strong>
-                                  <div class="feedback-container border rounded p-2 mt-1" style="max-height:150px; overflow-y:auto;">
-                                    {{#feedback}}
-                                      <div class="text-muted mb-2">{{text}}</div>
-                                    {{/feedback}}
-                                  </div>
-                                </div>
-                              {{/hasfeedback}}
-                              
-                              {{^hasfeedback}}
-                                <div class="mt-2 mb-2 text-muted">
-                                  <em>No additional feedback</em>
-                                </div>
-                              {{/hasfeedback}}
                             </div>
                           </div>
                         </div>
+                        
 
                         <!-- Right: Score / progress (single container to keep alignment) -->
                         <div class="ms-auto text-end flex-shrink-0" style="min-width: 140px;">
