@@ -26,9 +26,11 @@ $string['viewdetails'] = '📃 Details';
 $string['status'] = 'Status';
 $string['duedate'] = "Due Date";
 $string['feedbackavailable'] = "Feedback is available";
+$string['noassignments'] = "No assignments were found";
 $string['nofeedback'] = "No feedback at this time";
 $string['viewcourse'] = "View this course";
 $string['viewassignment'] = "View this assignment";
+$string['moodlegrade'] = "In Progress Grade";
 
 
 

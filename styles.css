@@ -53,7 +53,9 @@
 }
 */
 
+
 /* Make tab labels easier to scan */
+/*
 #courseTabs .nav-link i {
   margin-right: 0.4em;
   opacity: 0.85;
@@ -65,15 +67,17 @@
   border-radius: 0.375rem 0.375rem 0 0;  
   border: 1px #999 solid;
   background-color: #eee;
-}
+} */
 
 /* Change hover effect to match active tone */
+/*
 #courseTabs.nav-tabs .nav-link:hover {
   background-color: #dbc5c5;  
   color: var(--bs-primary);
 }
 
 /* Highlight the active course tab more clearly */
+/*
 #courseTabs.nav-tabs .nav-link.active {  
   background-color: #b44343;  
   color: #fff !important;
@@ -81,7 +85,8 @@
   border-color: var(--bs-primary);
   border-bottom-color: transparent;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
-}
+}*/
+
 
 .menteesummary-course .score-high {
   color: #333;
@@ -109,14 +114,18 @@
 .menteesummary-course .course-grade {
   display: inline-block;
   text-align: center;
-  font-size: 1.25rem;
-  padding: 4px 8px;
+  vertical-align: middle;
+  line-height: 1.5;
+  font-size: 1.5rem;
+  padding: 0.25rem 1rem;
   border-radius: 50px;
-  border: 2px solid black;
-  background-color: #333;
-  color: white;
-  font-weight: normal;
-  margin-left: 1rem;
+  font-weight: 500;
+}
+
+.menteesummary-course .course-grade-label {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-right: 0.5rem;
 }
 
 .menteesummary-course .score {
