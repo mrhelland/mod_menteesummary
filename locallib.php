@@ -20,6 +20,7 @@ $sql = "SELECT a.id,
                g.finalgrade AS grade,
                gi.categoryid, 
                cm.id AS cmid,
+               m.name AS modname,
                cm.section,
                cs.section AS sectionnumber,
                FIND_IN_SET(cm.id, cs.sequence)
@@ -115,6 +116,7 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
                 gg.finalgrade AS grade,
                 gi.categoryid,
                 cm.id AS cmid,
+                m.name as modname,
                 cs.section AS sectionnumber,
                 FIND_IN_SET(cm.id, cs.sequence) + (cs.section * 1000) AS position
             FROM {quiz} q

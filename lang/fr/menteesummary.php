@@ -26,3 +26,5 @@ $string['viewdetails'] = '📃 Détails';
 $string['status'] = 'Statut';
 $string['duedate'] = 'Date d’échéance';
 $string['feedbackavailable'] = 'Un retour est disponible';
+$string['viewcourse'] = "Voir ce cours";
+$string['viewassignment'] = "Voir le devoir du cours";

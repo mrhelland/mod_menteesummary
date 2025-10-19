@@ -1,72 +1,6 @@
 <?php
 /**
  * mod_menteesummary — view.php
- * -----------------------------------------------
- * SECURITY & PRIVACY COMPLIANCE CHECKLIST
- * -----------------------------------------------
- * 
- * ✅ ACCESS CONTROL
- * -----------------
- * [✔] require_login() called with $course and $cm context.
- * [✔] require_capability('mod/menteesummary:view', $context) limits access to authorized users.
- * [✔] Context retrieved via context_module::instance($cm->id).
- * [ ] Verify that capability is properly defined in db/access.php.
- * 
- * ✅ INPUT VALIDATION
- * -------------------
- * [✔] All incoming params sanitized using Moodle core functions:
- *      - $id = required_param('id', PARAM_INT)
- *      - $menteeid = optional_param('menteeid', 0, PARAM_INT)
- *      - $selectedcourseid = optional_param('courseid', 0, PARAM_INT)
- * [✔] No user input interpolated into SQL or file paths.
- * [✔] Explicit casting to (int) for defensive coding (recommended).
- * 
- * ✅ DATABASE SAFETY
- * ------------------
- * [✔] All DB access via $DB->get_record(), $DB->get_records_sql(), etc. with parameter binding.
- * [✔] No raw SQL concatenation or dynamic table names.
- * [✔] Helper functions (e.g., menteesummary_get_all_assignments) use bound parameters.
- * 
- * ✅ OUTPUT SANITIZATION
- * ----------------------
- * [✔] Mustache templates handle escaping automatically for {{variables}}.
- * [✔] Only safe, intentionally formatted HTML passed via {{{triple braces}}}.
- * [✔] Teacher feedback sanitized by Moodle editor (format_text / strip_tags).
- * [✔] No direct echo of untrusted data.
- * 
- * ✅ DATA PRIVACY
- * ---------------
- * [✔] Mentee data limited to users returned by menteesummary_get_user_mentees($USER->id).
- * [✔] No arbitrary user data fetched by ID without relationship validation.
- * [ ] Ensure menteesummary_get_user_mentees() enforces mentor relationship via DB or capability check.
- * 
- * ✅ CSRF & STATE MANAGEMENT
- * --------------------------
- * [✔] No write operations or data modification in this view.
- * [✔] All links are safe GET-only navigation via moodle_url.
- * [ ] If future POST/DELETE actions are added, wrap in require_sesskey().
- * 
- * ✅ FILE ACCESS
- * --------------
- * [✔] All includes are static (no user input in file paths).
- * [✔] Uses __DIR__ and $CFG->dirroot safely.
- * 
- * ✅ DEBUG / DISCLOSURE
- * ---------------------
- * [✔] No debug output (print_object, var_dump) left in production.
- * [✔] Error messages rely on Moodle exceptions (MUST_EXIST).
- * 
- * ✅ PERFORMANCE / SCALABILITY (non-security)
- * -------------------------------------------
- * [✔] Efficient single-pass loops for courses and activities.
- * [ ] Consider caching menteesummary_get_course_total() and get_all_assignments() for large deployments.
- * 
- * ✅ MAINTAINER NOTES
- * -------------------
- * - Never trust $menteeid or $courseid without verifying ownership.
- * - Always sanitize teacher-entered feedback with format_text() before display.
- * - When extending templates, prefer {{}} over {{{}}} unless output is trusted HTML.
- * - Run Security Check plugin (Site admin > Reports > Security overview) after updates.
  **/
 
 // include dependencies
@@ -136,6 +70,11 @@ if ($selected) {
     // Iterate through courses
     foreach ($courses as &$c) {
         $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
+        
+        // ✅ Add actual course URL for linking back in Mustache
+        $c['courseurl'] = (new moodle_url('/course/view.php', [
+            'id' => $c['id']
+        ]))->out(false);
 
         // Get and merge all assignments and quizzes
         $assignments = menteesummary_get_all_assignments($selected['id'], $c['id']);
@@ -156,6 +95,11 @@ if ($selected) {
             } else {
                 $scorePercent = "n/a";
             }
+
+            // ✅ Add direct link to the activity page
+            $activityurl = (new moodle_url('/mod/' . $a->modname . '/view.php', [
+                'id' => $a->cmid
+            ]))->out(false);
 
             $all[] = [
                 'id' => $a->id,
@@ -180,7 +124,8 @@ if ($selected) {
                 'scorecolor' => get_score_color2($scorePercent),
                 'percent' => $scorePercent,
                 'feedback' => $a->feedback,
-                'hasfeedback' => $a->hasfeedback
+                'hasfeedback' => $a->hasfeedback,
+                'activityurl' => $activityurl
             ];
             //print_object($all);
         }

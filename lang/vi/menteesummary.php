@@ -26,3 +26,5 @@ $string['viewdetails'] = '📃 Chi tiết';
 $string['status'] = 'Trạng thái';
 $string['duedate'] = 'Hạn nộp';
 $string['feedbackavailable'] = 'Phản hồi đã có sẵn';
+$string['viewcourse'] = "Xem khóa học này";
+$string['viewassignment'] = "Xem bài tập của khóa học";

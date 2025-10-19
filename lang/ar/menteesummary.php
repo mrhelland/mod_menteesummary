@@ -26,3 +26,5 @@ $string['viewdetails'] = '📃 التفاصيل';
 $string['status'] = 'الحالة';
 $string['duedate'] = 'تاريخ الاستحقاق';
 $string['feedbackavailable'] = 'الملاحظات متاحة';
+$string['viewcourse'] = "عرض هذا المقرر";
+$string['viewassignment'] = "عرض واجب المقرر";

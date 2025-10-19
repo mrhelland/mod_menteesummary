@@ -45,9 +45,12 @@
 
         <div class="card">
           <div class="card-body">
-            <div>
-              <h4 class="card-title">{{fullname}} <span class="course-grade">{{grade}}%</span></h4>
-              
+            <div class="mb-3">
+              <h4 class="card-title mb-0">{{fullname}} <span class="course-grade">{{grade}}%</span></h4>
+              <!-- Course link icon -->
+              <a href="{{courseurl}}" target="_blank" class="text-decoration-none ml-2">
+                <i class="fa fa-book-open fa-lg text-primary mr-2"></i><span>{{#str}} viewcourse, mod_menteesummary {{/str}}</span>
+              </a>
             </div>
 
             <!-- Responsive assignment sections -->
@@ -70,7 +73,11 @@
 
                         <!-- Middle: Assignment info -->
                         <div class="flex-grow-1 min-w-0">
-                          <strong class="d-block text-truncate">{{name}}</strong>
+                          <strong class="d-block text-truncate">
+                            <a href="{{activityurl}}" target="_blank" class="text-decoration-none text-dark" title="{{#str}} viewcourse, mod_menteesummary {{/str}}">
+                              {{name}}
+                            </a>
+                          </strong>
                           <small class="text-dark">
                             <span>{{maxgrade}} points</span>
                           </small>

@@ -26,3 +26,5 @@ $string['viewdetails'] = '📃 Detalles';
 $string['status'] = 'Estado';
 $string['duedate'] = 'Fecha de entrega';
 $string['feedbackavailable'] = 'La retroalimentación está disponible';
+$string['viewcourse'] = "Ver este curso";
+$string['viewassignment'] = "Ver tarea del curso";

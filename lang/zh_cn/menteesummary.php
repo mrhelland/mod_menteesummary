@@ -26,3 +26,5 @@ $string['viewdetails'] = '📃 详情';
 $string['status'] = '状态';
 $string['duedate'] = '截止日期';
 $string['feedbackavailable'] = '反馈可用';
+$string['viewcourse'] = "查看此课程";
+$string['viewassignment'] = "查看课程作业";
