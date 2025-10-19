@@ -120,10 +120,10 @@ if ($selected) {
                                                             true);
         $c['grade'] = $graderesult['total'];
 
-        if (debugging('', DEBUG_DEVELOPER)) {
-            print_object($graderesult);
-            print_object($graderesult);
-        }
+        // if (debugging('', DEBUG_DEVELOPER)) {
+        //     print_object($graderesult);
+        //     print_object($graderesult);
+        // }
 
         // Sort by position in the course
         usort($activities, function ($a, $b) {
