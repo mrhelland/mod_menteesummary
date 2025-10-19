@@ -6,6 +6,8 @@ $string['menteesummary:addinstance'] = 'Add a new mentee summary activity';
 $string['menteesummary:view'] = 'View mentee summary';
 $string['modulename'] = 'Mentee Summary';
 $string['modulenameplural'] = 'Mentee Summaries';
+$string['activityname'] = "Activity Name";
+$string['activityname_help'] = "The activity name displayed within the course";
 
 // Mentees
 $string['nomentees'] = 'No mentees found.';
