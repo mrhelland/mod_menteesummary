@@ -68,20 +68,24 @@
                     <li class="list-group-item">
                       <div class="d-flex align-items-start">
                         <div class="mr-2 flex-shrink-0">
-                          <img src="{{categoryicon}}" alt="{{categoryname}} Icon" width="32" height="32">
+                          <a href="{{activityurl}}" target="_blank" class="text-decoration-none"
+                               title="{{#str}} viewassignment, mod_menteesummary {{/str}}">
+                            <img src="{{categoryicon}}" alt="{{categoryname}} Icon" width="32" height="32">
+                          </a>
                         </div>
 
                         <div class="flex-grow-1 min-w-0">
                           <strong class="d-block text-truncate">
-                            <a href="{{activityurl}}" target="_blank" class="text-decoration-none text-dark"
+                            <a href="{{activityurl}}" target="_blank" class="text-decoration-none"
                                title="{{#str}} viewassignment, mod_menteesummary {{/str}}">
                               {{name}}
                             </a>
+                            
                           </strong>
                           <small class="text-dark">{{maxgrade}} points</small>
 
                           <button type="button"
-                                  class="btn btn-sm btn-outline-secondary mt-2 badge"
+                                  class="btn btn-sm btn-outline-secondary p-1 ml-3 badge"
                                   data-toggle="modal"
                                   data-target="#modal-{{courseid}}-{{id}}">
                             {{#str}} viewdetails, mod_menteesummary {{/str}}
