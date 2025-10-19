@@ -147,6 +147,7 @@ if ($selected) {
 
             $all[] = [
                 'id' => $a->id,
+                'courseid' => $c['id'],
                 'name' => $a->name,
                 'categoryname' => $a->categoryname,
                 'categoryweight' => $a->categoryweight,
