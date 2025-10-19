@@ -1,6 +1,39 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
+
+/**
+ * Determine if a mentor/parent can view a given mentee in a course.
+ *
+ * @param int $mentorid The current viewer (USER->id)
+ * @param int $menteeid The target user being viewed
+ * @param int $courseid The course context
+ * @return bool True if allowed
+ */
+function menteesummary_user_can_view(int $mentorid, int $menteeid, int $courseid): bool {
+    global $DB;
+
+    // 1. Mentors can always view themselves (for testing)
+    if ($mentorid === $menteeid) {
+        return true;
+    }
+
+    // 2. Confirm mentor/mentee relationship (by role assignment).
+    $sql = "SELECT 1
+              FROM {role_assignments} ra
+              JOIN {context} ctx ON ctx.id = ra.contextid
+             WHERE ra.userid = :mentorid
+               AND ctx.contextlevel = :usercontext
+               AND ctx.instanceid = :menteeid";
+    $params = [
+        'mentorid' => $mentorid,
+        'usercontext' => CONTEXT_USER,
+        'menteeid' => $menteeid
+    ];
+
+    return $DB->record_exists_sql($sql, $params);
+}
+
 /**
  * Get all assignments for a mentee in a course with grades.
  */
@@ -180,7 +213,7 @@ function menteesummary_get_all_quizzes(int $userid, int $courseid): array {
     $attempts = $DB->get_records_sql($attemptsql, $inparams);
 
 
-     $submitted_quizids = [];
+    $submitted_quizids = [];
     foreach ($attempts as $attempt) {
         $submitted_quizids[$attempt->quiz] = true;
     }
@@ -417,6 +450,8 @@ function menteesummary_get_category_weight_percent(int $courseid, int $categoryi
     // 5. Round for display
     return round($weight, 2);
 }
+
+
 
 
 

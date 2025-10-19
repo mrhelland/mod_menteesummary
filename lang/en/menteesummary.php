@@ -33,6 +33,7 @@ $string['nofeedback'] = "No feedback at this time";
 $string['viewcourse'] = "View this course";
 $string['viewassignment'] = "View this assignment";
 $string['moodlegrade'] = "In Progress Grade";
+$string['privacy:metadata'] = "The Mentee Summary activity does not retain any personal data. It only displays data that is already available.";
 
 
 

@@ -11,6 +11,18 @@ $capabilities = [
             'manager' => CAP_ALLOW
         ],
     ],
+
+    // 🔒 Extended permission to view all mentees' grades/progress.
+    'mod/menteesummary:viewall' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    
     'mod/menteesummary:addinstance' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,

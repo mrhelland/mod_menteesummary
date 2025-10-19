@@ -9,26 +9,48 @@ require_once(__DIR__ . '/locallib.php');
 require_once($CFG->libdir . '/gradelib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 
-defined('MOODLE_INTERNAL') || die();
-
-// Get current object id's
+// Get current parameters
 $id = required_param('id', PARAM_INT); // Course module ID.
 $menteeid = optional_param('menteeid', 0, PARAM_INT);
 $selectedcourseid = optional_param('courseid', 0, PARAM_INT);
 
-// Get context and check permissions
+// Get course context
 $cm = get_coursemodule_from_id('menteesummary', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
 $context = context_module::instance($cm->id);
+
+// Check for login and required capabilities
 require_login($course, true, $cm);
 require_capability('mod/menteesummary:view', $context);
 
-// Update page
+// If a mentee is specified, confirm privileges to view mentee data
+if ($menteeid && $menteeid != $USER->id) {
+    $coursecontext = context_course::instance($course->id);
+
+    // Option 1: Check if the current user has a powerful override capability.
+    if (!has_capability('mod/menteesummary:viewall', $coursecontext)) {
+
+        // Option 2: Otherwise, enforce valid mentor relationship.
+        if (!menteesummary_user_can_view($USER->id, $menteeid, $course->id)) {
+            throw new required_capability_exception(
+                $coursecontext,
+                'mod/menteesummary:view',
+                'nopermissions',
+                ''
+            );
+        }
+    }
+}
+
+// Update page information
 $PAGE->set_url('/mod/menteesummary/view.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($cm->name));
 $PAGE->set_heading($course->fullname);
+$PAGE->set_context($context);
+$PAGE->set_cacheable(false); // mentee-specific data; should not be cached per user.
 
-// Get mentees assigned to current user
+
+// Get all mentees assigned to current user
 $mentees = [];
 $users = menteesummary_get_user_mentees($USER->id);
 foreach ($users as $m) {
@@ -48,7 +70,7 @@ foreach ($users as $m) {
     ];
 }
 
-// Is there multiple mentees?
+// Are there multiple mentees?
 $menteecount = count($mentees);
 $hasmultiplementees = $menteecount > 1;
 
@@ -99,7 +121,7 @@ if ($selected) {
         $all = [];
         foreach ($activities as $a) {
             
-            if ($a->graded) {
+            if ($a->graded && !empty($a->maxgrade)) {
                 $scorePercent = 100.0 * (float) $a->grade / (float) $a->maxgrade;
             } else {
                 $scorePercent = "n/a";
