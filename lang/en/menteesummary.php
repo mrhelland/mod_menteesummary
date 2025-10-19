@@ -26,6 +26,7 @@ $string['viewdetails'] = '📃 Details';
 $string['status'] = 'Status';
 $string['duedate'] = "Due Date";
 $string['feedbackavailable'] = "Feedback is available";
+$string['nofeedback'] = "No feedback at this time";
 $string['viewcourse'] = "View this course";
 $string['viewassignment'] = "View this assignment";
 
