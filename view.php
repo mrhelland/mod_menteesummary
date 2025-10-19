@@ -48,6 +48,15 @@ foreach ($users as $m) {
     ];
 }
 
+// Is there multiple mentees?
+$menteecount = count($mentees);
+$hasmultiplementees = $menteecount > 1;
+
+// ✅ Auto-select mentee if only one exists and none chosen
+if ($menteecount === 1 && empty($menteeid)) {
+    $menteeid = $mentees[0]['id'];
+}
+
 // Determine if a mentee is selected
 $selected = null;
 if ($menteeid) {
@@ -174,7 +183,8 @@ if ($selected) {
         ],
         'backurl' => (new moodle_url('/mod/menteesummary/view.php', ['id' => $cm->id]))->out(false),
         'selectedcourseid' => $selectedcourseid,
-        'hascurrentcourse' => !empty($selectedcourseid)
+        'hascurrentcourse' => !empty($selectedcourseid),
+        'hasmultiplementees' => $hasmultiplementees
     ];
 
     $template = 'mod_menteesummary/view';
