@@ -100,7 +100,9 @@ if ($selected) {
 
     // Iterate through courses
     foreach ($courses as &$c) {
-        $c['grade'] = menteesummary_get_course_total($selected['id'], $c['id']);
+        //$graderesult = menteesummary_get_course_total($selected['id'], $c['id']);
+        //$c['grade'] = $graderesult['total'];
+
         
         // ✅ Add actual course URL for linking back in Mustache
         $c['courseurl'] = (new moodle_url('/course/view.php', [
@@ -111,6 +113,17 @@ if ($selected) {
         $assignments = menteesummary_get_all_assignments($selected['id'], $c['id']);
         $quizzes = menteesummary_get_all_quizzes($selected['id'], $c['id']);
         $activities = array_merge($assignments, $quizzes);
+
+        $graderesult = menteesummary_calculate_overall_grade($assignments, 
+                                                            $quizzes, 
+                                                            true, 
+                                                            true);
+        $c['grade'] = $graderesult['total'];
+
+        if (debugging('', DEBUG_DEVELOPER)) {
+            print_object($graderesult);
+            print_object($graderesult);
+        }
 
         // Sort by position in the course
         usort($activities, function ($a, $b) {

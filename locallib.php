@@ -338,45 +338,196 @@ function menteesummary_get_mentee_courses($menteeid) {
     return $out;
 }
 
+// /**
+//  * Get the final course total grade for a user in a course.
+//  *
+//  * @param int $userid User ID
+//  * @param int $courseid Course ID
+//  * @return float|string Final grade or '-' if not available
+//  */
+// function menteesummary_get_course_total($userid, $courseid) {
+//     global $CFG;
+//     require_once($CFG->libdir . '/gradelib.php');
+//     require_once($CFG->dirroot . '/grade/querylib.php');
+
+//     // $coursegrade = grade_get_course_grades($courseid, $userid);
+//     // print_object($coursegrade);
+
+//     // if (!empty($coursegrade) && isset($coursegrade->grade)) {
+//     //     $percentage = $coursegrade->grade; // This is the final grade (usually already a percentage).
+//     //     return format_float($percentage, 1);
+//     // }
+
+//     $grades = grade_get_course_grades($courseid, $userid);
+
+//     // $grades->grades[$userid] contains the user's course total info.
+//     if (!empty($grades) && !empty($grades->grades) && isset($grades->grades[$userid])) {
+//         $g = $grades->grades[$userid];
+//         // Otherwise fall back to raw grade value (round/format).
+//         if (isset($g->grade) && $g->grade !== null) {
+//             return format_float($g->grade, 1);
+//         }
+//         // Prefer the already-formatted string if present (str_grade).
+//         if (!empty($g->str_grade)) {
+//             return (string)$g->str_grade;
+//         }
+
+
+//     }
+
+//     return '-';
+// }
+
 /**
- * Get the final course total grade for a user in a course.
+ * Compute a user's final grade using category weighting based on raw points.
  *
- * @param int $userid User ID
- * @param int $courseid Course ID
- * @return float|string Final grade or '-' if not available
+ * Category grade = (earned / possible)
+ * Final grade = Σ( category_percent × normalized_category_weight )
+ * 
+ * THIS FUNCTION IS NOT PORTABLE AND NEEDS TO BE REWRITTEN TO RESPECT GRADEBOOK SETUP. THIS IS A STOP-GAP.
+ *
+ * @param array $assignments  Array from menteesummary_get_all_assignments()
+ * @param array $quizzes      Array from menteesummary_get_all_quizzes()
+ * @param bool $countmissingaszero   Count missing items as 0 points earned
+ * @param bool $countungradedaszero  Count submitted-but-ungraded items as 0 points earned
+ * @return array ['total' => string, 'categories' => array, 'gradedcount' => int, 'pendingcount' => int, 'missingcount' => int]
  */
-function menteesummary_get_course_total($userid, $courseid) {
-    global $CFG;
-    require_once($CFG->libdir . '/gradelib.php');
-    require_once($CFG->dirroot . '/grade/querylib.php');
+function menteesummary_calculate_overall_grade(
+    array $assignments,
+    array $quizzes,
+    bool $countmissingaszero = false,
+    bool $countungradedaszero = false
+): array {
+    $result = [
+        'total' => '-',
+        'categories' => [],
+        'gradedcount' => 0,
+        'pendingcount' => 0,
+        'missingcount' => 0
+    ];
 
-    // $coursegrade = grade_get_course_grades($courseid, $userid);
-    // print_object($coursegrade);
-
-    // if (!empty($coursegrade) && isset($coursegrade->grade)) {
-    //     $percentage = $coursegrade->grade; // This is the final grade (usually already a percentage).
-    //     return format_float($percentage, 1);
-    // }
-
-    $grades = grade_get_course_grades($courseid, $userid);
-
-    // $grades->grades[$userid] contains the user's course total info.
-    if (!empty($grades) && !empty($grades->grades) && isset($grades->grades[$userid])) {
-        $g = $grades->grades[$userid];
-        // Otherwise fall back to raw grade value (round/format).
-        if (isset($g->grade) && $g->grade !== null) {
-            return format_float($g->grade, 1);
-        }
-        // Prefer the already-formatted string if present (str_grade).
-        if (!empty($g->str_grade)) {
-            return (string)$g->str_grade;
-        }
-
-
+    $all = array_merge($assignments, $quizzes);
+    if (empty($all)) {
+        return $result;
     }
 
-    return '-';
+    // === 1. Aggregate raw earned/possible points per category ===
+    $categories = [];
+
+    foreach ($all as $item) {
+        $catname = $item->categoryname ?? get_string('uncategorised', 'grades');
+        $catweight = is_numeric($item->categoryweight) ? (float)$item->categoryweight : 1.0;
+
+        if (!isset($categories[$catname])) {
+            $categories[$catname] = [
+                'earned' => 0.0,
+                'possible' => 0.0,
+                'weight' => $catweight,
+                'gradedcount' => 0,
+                'pendingcount' => 0,
+                'missingcount' => 0
+            ];
+        }
+
+        $earned = null;
+        $possible = is_numeric($item->maxgrade) ? (float)$item->maxgrade : 0.0;
+
+        // --- CASE 1: Graded ---
+        if (!empty($item->graded) && is_numeric($item->grade)) {
+            $earned = (float)$item->grade;
+            $categories[$catname]['gradedcount']++;
+            $result['gradedcount']++;
+        }
+
+        // --- CASE 2: Submitted but ungraded ---
+        else if (!empty($item->submitted) && empty($item->graded)) {
+            if ($countungradedaszero) {
+                $earned = 0.0;
+            } else {
+                $categories[$catname]['pendingcount']++;
+                $result['pendingcount']++;
+                continue;
+            }
+        }
+
+        // --- CASE 3: Missing (not submitted) ---
+        else if (!empty($item->missing)) {
+            if ($countmissingaszero) {
+                $earned = 0.0;
+            } else {
+                $categories[$catname]['missingcount']++;
+                $result['missingcount']++;
+                continue;
+            }
+        } else {
+            continue;
+        }
+
+        // Skip invalid items
+        if ($possible <= 0) {
+            continue;
+        }
+
+        $categories[$catname]['earned'] += $earned;
+        $categories[$catname]['possible'] += $possible;
+    }
+
+    if (empty($categories)) {
+        return $result;
+    }
+
+    // === 2. Compute total weight of all eligible categories ===
+    $totalweight = 0.0;
+    foreach ($categories as $c) {
+        if ($c['possible'] > 0 && $c['weight'] > 0) {
+            $totalweight += $c['weight'];
+        }
+    }
+    if ($totalweight <= 0) {
+        return $result;
+    }
+
+    // === 3. Compute category percentages and weighted contribution ===
+    $finalpercent = 0.0;
+
+    foreach ($categories as $catname => $c) {
+        if ($c['possible'] <= 0) {
+            $result['categories'][$catname] = [
+                'percent' => '-',
+                'weight' => $c['weight'],
+                'effectiveweight' => 0,
+                'gradedcount' => $c['gradedcount'],
+                'pendingcount' => $c['pendingcount'],
+                'missingcount' => $c['missingcount']
+            ];
+            continue;
+        }
+
+        $categorypercent = ($c['earned'] / $c['possible']) * 100.0;
+        $effectiveweight = $c['weight'] / $totalweight;
+
+        $finalpercent += $categorypercent * $effectiveweight;
+
+        $result['categories'][$catname] = [
+            'percent' => format_float($categorypercent, 1),
+            'weight' => $c['weight'],
+            'effectiveweight' => round($effectiveweight * 100, 1), // show as %
+            'gradedcount' => $c['gradedcount'],
+            'pendingcount' => $c['pendingcount'],
+            'missingcount' => $c['missingcount'],
+            'earned' => $c['earned'],
+            'possible' => $c['possible']
+        ];
+    }
+
+    // === 4. Store normalized total ===
+    $result['total'] = format_float($finalpercent, 1);
+
+    return $result;
 }
+
+
+
 
 /**
  * Returns a CSS color (HEX) based on percentage.
