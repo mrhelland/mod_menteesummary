@@ -96,9 +96,4 @@ Privacy declaration:
 $string['privacy:metadata'] = 'The Mentee Summary activity does not store any personal data.';
 ```
 
-## 🪪 License
-
-This plugin is distributed under the terms of the
-GNU General Public License v3 or later (GPLv3).
-See: http://www.gnu.org/copyleft/gpl.html
 
